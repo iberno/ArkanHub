@@ -1,0 +1,20 @@
+{
+  "name": "alka",
+  "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "msgpackr-extract"
+    ]
+  },
+  "scripts": {
+    "dev:server": "pnpm --filter @alka/server dev",
+    "dev:web": "pnpm --filter @alka/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint"
+  }
+}

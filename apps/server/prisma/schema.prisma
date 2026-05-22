@@ -1,0 +1,436 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(255)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  active       Boolean  @default(true)
+  departmentId String?  @map("department_id") @db.Uuid
+  companyId    String?  @map("company_id") @db.Uuid
+  department   Department? @relation(fields: [departmentId], references: [id])
+  company      Company? @relation(fields: [companyId], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  roles          UserRole[]
+  ticketsCreated Ticket[]           @relation("requester")
+  assignedTickets Ticket[]          @relation("assigned")
+  comments       TicketComment[]
+  auditLogs      AuditLog[]
+  sessions       Session[]
+  articles       KnowledgeArticle[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId String @map("user_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Department {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  users User[]
+
+  @@map("departments")
+}
+
+model Company {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  document  String?  @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  users User[]
+
+  @@map("companies")
+}
+
+model Ticket {
+  id           String    @id @default(uuid()) @db.Uuid
+  protocol     String    @unique @db.VarChar(20)
+  title        String    @db.VarChar(255)
+  description  String    @db.Text
+  requesterId  String    @map("requester_id") @db.Uuid
+  assignedTo   String?   @map("assigned_to") @db.Uuid
+  statusId     String    @map("status_id") @db.Uuid
+  priorityId   String    @map("priority_id") @db.Uuid
+  categoryId   String?   @map("category_id") @db.Uuid
+  slaId        String?   @map("sla_id") @db.Uuid
+  openedAt     DateTime  @default(now()) @map("opened_at")
+  resolvedAt   DateTime? @map("resolved_at")
+  closedAt     DateTime? @map("closed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  requester   User              @relation("requester", fields: [requesterId], references: [id])
+  assignee    User?             @relation("assigned", fields: [assignedTo], references: [id])
+  status      TicketStatus      @relation(fields: [statusId], references: [id])
+  priority    TicketPriority    @relation(fields: [priorityId], references: [id])
+  category    TicketCategory?   @relation(fields: [categoryId], references: [id])
+  sla         Sla?              @relation(fields: [slaId], references: [id])
+  comments    TicketComment[]
+  histories   TicketHistory[]
+  attachments TicketAttachment[]
+  slaEvents   SlaEvent[]
+  approvals   ApprovalRequest[]
+
+  @@map("tickets")
+}
+
+model TicketStatus {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(100)
+  color     String?  @db.VarChar(7)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tickets Ticket[]
+
+  @@map("ticket_statuses")
+}
+
+model TicketPriority {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(100)
+  level     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tickets Ticket[]
+
+  @@map("ticket_priorities")
+}
+
+model TicketCategory {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  parentId  String?  @map("parent_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parent   TicketCategory?  @relation("CategoryParent", fields: [parentId], references: [id])
+  children TicketCategory[] @relation("CategoryParent")
+  tickets  Ticket[]
+
+  @@map("ticket_categories")
+}
+
+model TicketComment {
+  id        String   @id @default(uuid()) @db.Uuid
+  ticketId  String   @map("ticket_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  comment   String   @db.Text
+  internal  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("ticket_comments")
+}
+
+model TicketHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  ticketId  String   @map("ticket_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  field     String   @db.VarChar(100)
+  oldValue  String?  @map("old_value") @db.Text
+  newValue  String?  @map("new_value") @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+
+  @@map("ticket_histories")
+}
+
+model TicketAttachment {
+  id         String   @id @default(uuid()) @db.Uuid
+  ticketId   String   @map("ticket_id") @db.Uuid
+  uploadedBy String   @map("uploaded_by") @db.Uuid
+  fileName   String   @map("file_name") @db.VarChar(255)
+  filePath   String   @map("file_path") @db.VarChar(500)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+
+  @@map("ticket_attachments")
+}
+
+model Sla {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String   @db.VarChar(255)
+  responseTime    Int      @map("response_time")
+  resolutionTime  Int      @map("resolution_time")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  rules    SlaRule[]
+  tickets  Ticket[]
+  slaHours BusinessHour[]
+
+  @@map("slas")
+}
+
+model SlaRule {
+  id       String @id @default(uuid()) @db.Uuid
+  slaId    String @map("sla_id") @db.Uuid
+  priority String @db.VarChar(50)
+  impact   String @db.VarChar(50)
+
+  sla Sla @relation(fields: [slaId], references: [id])
+
+  @@map("sla_rules")
+}
+
+model SlaEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  ticketId  String   @map("ticket_id") @db.Uuid
+  eventType String   @map("event_type") @db.VarChar(50)
+  eventTime DateTime @default(now()) @map("event_time")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+
+  @@map("sla_events")
+}
+
+model BusinessHour {
+  id       String   @id @default(uuid()) @db.Uuid
+  slaId    String   @map("sla_id") @db.Uuid
+  dayOfWeek Int     @map("day_of_week")
+  startTime String  @map("start_time") @db.VarChar(5)
+  endTime   String  @map("end_time") @db.VarChar(5)
+
+  sla Sla @relation(fields: [slaId], references: [id])
+
+  @@map("business_hours")
+}
+
+model ApprovalFlow {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String   @db.VarChar(255)
+  entityType String   @map("entity_type") @db.VarChar(50)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  steps    ApprovalStep[]
+  requests ApprovalRequest[]
+
+  @@map("approval_flows")
+}
+
+model ApprovalStep {
+  id           String   @id @default(uuid()) @db.Uuid
+  flowId       String   @map("flow_id") @db.Uuid
+  stepOrder    Int      @map("step_order")
+  approverType String   @map("approver_type") @db.VarChar(50)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  flow ApprovalFlow @relation(fields: [flowId], references: [id])
+
+  @@map("approval_steps")
+}
+
+model ApprovalRequest {
+  id           String   @id @default(uuid()) @db.Uuid
+  ticketId     String   @map("ticket_id") @db.Uuid
+  flowId       String   @map("flow_id") @db.Uuid
+  status       String   @default("pending") @db.VarChar(20)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  ticket  Ticket             @relation(fields: [ticketId], references: [id])
+  flow    ApprovalFlow       @relation(fields: [flowId], references: [id])
+  histories ApprovalHistory[]
+
+  @@map("approval_requests")
+}
+
+model ApprovalHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  requestId String   @map("request_id") @db.Uuid
+  approvedBy String  @map("approved_by") @db.Uuid
+  action    String   @db.VarChar(20)
+  comments  String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  request ApprovalRequest @relation(fields: [requestId], references: [id])
+
+  @@map("approval_histories")
+}
+
+model WorkflowRule {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  conditions WorkflowCondition[]
+  actions    WorkflowAction[]
+  executions WorkflowExecution[]
+
+  @@map("workflow_rules")
+}
+
+model WorkflowCondition {
+  id         String @id @default(uuid()) @db.Uuid
+  workflowId String @map("workflow_id") @db.Uuid
+  field      String @db.VarChar(100)
+  operator   String @db.VarChar(20)
+  value      String @db.VarChar(255)
+
+  workflow WorkflowRule @relation(fields: [workflowId], references: [id])
+
+  @@map("workflow_conditions")
+}
+
+model WorkflowAction {
+  id         String @id @default(uuid()) @db.Uuid
+  workflowId String @map("workflow_id") @db.Uuid
+  actionType String @map("action_type") @db.VarChar(50)
+  payload    String @db.Text
+
+  workflow WorkflowRule @relation(fields: [workflowId], references: [id])
+
+  @@map("workflow_actions")
+}
+
+model WorkflowExecution {
+  id         String   @id @default(uuid()) @db.Uuid
+  workflowId String   @map("workflow_id") @db.Uuid
+  ticketId   String   @map("ticket_id") @db.Uuid
+  result     String   @db.Text
+  executedAt DateTime @default(now()) @map("executed_at")
+
+  workflow WorkflowRule @relation(fields: [workflowId], references: [id])
+
+  @@map("workflow_executions")
+}
+
+model KnowledgeArticle {
+  id         String   @id @default(uuid()) @db.Uuid
+  title      String   @db.VarChar(255)
+  content    String   @db.Text
+  categoryId String?  @map("category_id") @db.Uuid
+  authorId   String   @map("author_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category KnowledgeCategory? @relation(fields: [categoryId], references: [id])
+  author   User               @relation(fields: [authorId], references: [id])
+  versions KnowledgeVersion[]
+
+  @@map("knowledge_articles")
+}
+
+model KnowledgeCategory {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  articles KnowledgeArticle[]
+
+  @@map("knowledge_categories")
+}
+
+model KnowledgeVersion {
+  id        String   @id @default(uuid()) @db.Uuid
+  articleId String   @map("article_id") @db.Uuid
+  content   String   @db.Text
+  version   Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article KnowledgeArticle @relation(fields: [articleId], references: [id])
+
+  @@map("knowledge_versions")
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  refreshToken String   @map("refresh_token") @db.VarChar(500)
+  ip           String?  @db.VarChar(45)
+  userAgent    String?  @map("user_agent") @db.Text
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("sessions")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  action    String   @db.VarChar(50)
+  entity    String   @db.VarChar(100)
+  entityId  String   @map("entity_id") @db.Uuid
+  metadata  Json?    @db.JsonB
+  ip        String?  @db.VarChar(45)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  title     String   @db.VarChar(255)
+  body      String   @db.Text
+  read      Boolean  @default(false)
+  type      String   @default("system") @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}

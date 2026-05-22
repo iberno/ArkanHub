@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class ConfigService {
   get jwtSecret(): string {
-    return process.env.JWT_SECRET || 'alka-secret-dev';
+    return process.env.JWT_SECRET || 'arkanhub-secret-dev';
   }
 
   get jwtExpiresIn(): string {
@@ -17,7 +17,7 @@ export class ConfigService {
   get databaseUrl(): string {
     return (
       process.env.DATABASE_URL ||
-      'postgresql://postgres:postgres@localhost:5432/alka'
+      'postgresql://iberno:postgres@localhost:5432/arkanhub'
     );
   }
 

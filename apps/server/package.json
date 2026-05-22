@@ -1,5 +1,5 @@
 {
-  "name": "@alka/server",
+  "name": "@arkanhub/server",
   "version": "0.0.1",
   "private": true,
   "prisma": {

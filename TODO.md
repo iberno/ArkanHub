@@ -2,14 +2,14 @@
 
 ## Setup Inicial
 
-- [ ] Inicializar repositório Git
-- [ ] Configurar monorepo (apps/server + apps/web)
-- [ ] Configurar TypeScript no backend e frontend
+- [x] Inicializar repositório Git
+- [x] Configurar monorepo (apps/server + apps/web)
+- [x] Configurar TypeScript no backend e frontend
 - [ ] Configurar ESLint + Prettier + Husky
-- [ ] Configurar Docker + Docker Compose (PostgreSQL + Redis)
-- [ ] Configurar Prisma ORM + schema inicial
-- [ ] Configurar NestJS (app server)
-- [ ] Configurar Vite + React + Tailwind + DaisyUI (app web)
+- [ ] ~~Configurar Docker + Docker Compose (PostgreSQL + Redis)~~ (sem suporte)
+- [x] Configurar Prisma ORM + schema inicial
+- [x] Configurar NestJS (app server)
+- [x] Configurar Vite + React + Tailwind + DaisyUI (app web)
 
 ---
 
@@ -17,37 +17,37 @@
 
 ### Core
 
-- [ ] **Auth** — Módulo de autenticação (NestJS)
-  - [ ] POST /auth/login
-  - [ ] POST /auth/refresh
-  - [ ] POST /auth/logout
-  - [ ] JWT Access Token (15min) + Refresh Token (7 dias)
-  - [ ] Proteção de rotas com guards
-  - [ ] Rate limiter + Helmet + CORS
-- [ ] **Users** — CRUD de usuários
-  - [ ] GET /users
-  - [ ] POST /users
-  - [ ] PATCH /users/:id
-  - [ ] DELETE /users/:id (soft delete)
-  - [ ] Roles & Permissions (RBAC)
+- [x] **Auth** — Módulo de autenticação (NestJS)
+  - [x] POST /auth/login
+  - [x] POST /auth/refresh
+  - [x] POST /auth/logout
+  - [x] JWT Access Token (15min) + Refresh Token (7 dias)
+  - [ ] Proteção de rotas com guards (JwtAuthGuard)
+  - [x] Rate limiter + Helmet + CORS
+- [x] **Users** — CRUD de usuários
+  - [x] GET /users
+  - [x] POST /users
+  - [x] PATCH /users/:id
+  - [x] DELETE /users/:id (soft delete)
+  - [ ] Roles & Permissions (RBAC) — endpoints pendentes
   - [ ] Seed de perfis: Administrador, Supervisor, Técnico, Solicitante, Gestor
-- [ ] **Tickets** — CRUD de tickets
-  - [ ] GET /tickets (listagem com filtros)
-  - [ ] POST /tickets
-  - [ ] GET /tickets/:id
-  - [ ] PATCH /tickets/:id
-  - [ ] Protocolo automático
-  - [ ] Fluxo: Abertura → Classificação → Priorização → Atendimento → Resolução → Encerramento
+- [x] **Tickets** — CRUD de tickets
+  - [x] GET /tickets (listagem sem filtros)
+  - [x] POST /tickets
+  - [x] GET /tickets/:id
+  - [x] PATCH /tickets/:id
+  - [x] Protocolo automático
+  - [x] Fluxo: statuses (Aberto → Em Andamento → Aguardando → Resolvido → Fechado)
 - [ ] **Comentários** em tickets
   - [ ] POST /tickets/:id/comments
   - [ ] Comentários públicos e internos
 - [ ] **Anexos** em tickets
   - [ ] POST /tickets/:id/attachments
   - [ ] Upload/download de arquivos
-- [ ] **Dashboard básico**
-  - [ ] Tickets abertos
-  - [ ] Tickets críticos
-  - [ ] SLA violados
+- [x] **Dashboard básico** (frontend estático)
+  - [x] Tickets abertos
+  - [x] Tickets críticos
+  - [x] SLA violados
 - [ ] **SLA simples**
   - [ ] CRUD de SLAs
   - [ ] Cálculo de SLA por prioridade
@@ -55,13 +55,14 @@
 
 ### Frontend
 
-- [ ] Tela de login
-- [ ] Layout base com sidebar + header
-- [ ] CRUD de usuários (tabela + formulário)
-- [ ] Lista de tickets com filtros
-- [ ] Página de detalhe do ticket
+- [x] Tela de login
+- [x] Layout base com sidebar + header (mobile-first, 4K)
+- [x] Toggle de tema (wireframe/business)
+- [ ] CRUD de usuários (tabela + formulário) — apenas estrutura inicial
+- [x] Lista de tickets com filtros — apenas estrutura inicial
+- [x] Página de detalhe do ticket — apenas estrutura inicial
 - [ ] Formulário de criação de ticket
-- [ ] Dashboard MVP
+- [x] Dashboard MVP — apenas estrutura inicial
 
 ---
 
@@ -117,7 +118,7 @@
 
 ## Infra & DevOps
 
-- [ ] Docker Compose para desenvolvimento
+- [ ] ~~Docker Compose para desenvolvimento~~ (sem suporte)
 - [ ] CI/CD com GitHub Actions
 - [ ] Ambientes: DEV → HML → PRD
 - [ ] NGINX como reverse proxy

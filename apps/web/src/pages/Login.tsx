@@ -3,7 +3,7 @@ export function Login() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="card bg-base-100 shadow-xl w-full max-w-sm">
         <div className="card-body">
-          <h2 className="card-title text-2xl justify-center mb-4">Alka ITSM</h2>
+          <h2 className="card-title text-2xl justify-center mb-4">ArkanHub</h2>
           <form>
             <div className="form-control mb-4">
               <label className="label"><span className="label-text">Email</span></label>

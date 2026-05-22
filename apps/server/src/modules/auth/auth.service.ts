@@ -35,7 +35,7 @@ export class AuthService {
   async refresh(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: process.env.JWT_SECRET || 'alka-secret-dev',
+        secret: process.env.JWT_SECRET || 'arkanhub-secret-dev',
       });
 
       const user = await this.prisma.user.findUnique({

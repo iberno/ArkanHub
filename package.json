@@ -1,5 +1,5 @@
 {
-  "name": "alka",
+  "name": "arkanhub",
   "private": true,
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -12,8 +12,8 @@
     ]
   },
   "scripts": {
-    "dev:server": "pnpm --filter @alka/server dev",
-    "dev:web": "pnpm --filter @alka/web dev",
+    "dev:server": "pnpm --filter @arkanhub/server dev",
+    "dev:web": "pnpm --filter @arkanhub/web dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint"
   }

@@ -19,7 +19,7 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Alka ITSM')
+    .setTitle('ArkanHub')
     .setDescription('API do sistema de gerenciamento de tickets ITSM')
     .setVersion('1.0')
     .addBearerAuth()

@@ -7,11 +7,11 @@ async function main() {
   const adminPass = await bcrypt.hash('admin123', 10);
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@alka.com' },
-    update: {},
+    where: { email: 'admin@arkanhub.com' },
+    update: { name: 'Administrador' },
     create: {
       name: 'Administrador',
-      email: 'admin@alka.com',
+      email: 'admin@arkanhub.com',
       passwordHash: adminPass,
     },
   });
@@ -27,7 +27,7 @@ async function main() {
   for (const status of statuses) {
     await prisma.ticketStatus.upsert({
       where: { name: status.name },
-      update: {},
+      update: { color: status.color },
       create: status,
     });
   }
@@ -42,13 +42,13 @@ async function main() {
   for (const priority of priorities) {
     await prisma.ticketPriority.upsert({
       where: { name: priority.name },
-      update: {},
+      update: { level: priority.level },
       create: priority,
     });
   }
 
   console.log('Seed concluído com sucesso!');
-  console.log(`Admin: admin@alka.com / admin123`);
+  console.log(`Admin: admin@arkanhub.com / admin123`);
 }
 
 main()

@@ -65,17 +65,18 @@ export function Tickets() {
               <tr>
                 <th>Protocolo</th>
                 <th>Título</th>
-                <th>Solicitante</th>
+                <th className="hidden md:table-cell">Solicitante</th>
                 <th>Status</th>
                 <th>Prioridade</th>
-                <th>Abertura</th>
+                <th className="hidden lg:table-cell">Abertura</th>
+                <th className="hidden 2xl:table-cell">Atribuído</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center text-base-content/50 py-8">
+                  <td colSpan={8} className="text-center text-base-content/50 py-8">
                     Nenhum ticket encontrado
                   </td>
                 </tr>
@@ -83,10 +84,10 @@ export function Tickets() {
                 filtered.map((ticket) => (
                   <tr key={ticket.id} className="hover">
                     <td className="font-mono text-xs">{ticket.protocol}</td>
-                    <td className="max-w-[250px]">
+                    <td className="max-w-[200px] lg:max-w-[300px] 2xl:max-w-[500px]">
                       <span className="truncate block">{ticket.title}</span>
                     </td>
-                    <td className="text-sm">{ticket.requester?.name}</td>
+                    <td className="hidden md:table-cell text-sm">{ticket.requester?.name}</td>
                     <td>
                       <span
                         className="badge badge-sm"
@@ -104,8 +105,11 @@ export function Tickets() {
                         {ticket.priority?.name}
                       </span>
                     </td>
-                    <td className="text-sm text-base-content/60">
+                    <td className="hidden lg:table-cell text-sm text-base-content/60">
                       {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
+                    </td>
+                    <td className="hidden 2xl:table-cell text-sm text-base-content/60">
+                      {ticket.assignee?.name || '-'}
                     </td>
                     <td>
                       <Link to={`/tickets/${ticket.id}`} className="btn btn-ghost btn-xs">

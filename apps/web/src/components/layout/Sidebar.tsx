@@ -11,7 +11,7 @@ export function Sidebar() {
   return (
     <div className="drawer-side z-50">
       <label htmlFor="sidebar-drawer" className="drawer-overlay" />
-      <aside className="bg-base-100 min-h-screen w-72 xl:w-80 overflow-y-auto">
+      <aside className="bg-base-100 min-h-screen w-72 xl:w-80 2xl:w-96 overflow-y-auto">
         <div className="flex items-center gap-3 px-6 py-4 border-b border-base-200">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content font-bold text-sm">
             A

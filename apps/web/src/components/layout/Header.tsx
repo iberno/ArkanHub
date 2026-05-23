@@ -14,7 +14,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-base-200 bg-base-100/95 backdrop-blur supports-[backdrop-filter]:bg-base-100/80">
-      <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto">
+      <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8 xl:px-10 max-w-[1920px] mx-auto">
         <div className="flex items-center gap-4">
           <label
             htmlFor="sidebar-drawer"

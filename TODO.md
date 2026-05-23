@@ -55,14 +55,14 @@
 
 ### Frontend
 
-- [x] Tela de login
+- [x] Tela de login funcional (conectada à API)
 - [x] Layout base com sidebar + header (mobile-first, 4K)
 - [x] Toggle de tema (wireframe/business)
-- [ ] CRUD de usuários (tabela + formulário) — apenas estrutura inicial
-- [x] Lista de tickets com filtros — apenas estrutura inicial
-- [x] Página de detalhe do ticket — apenas estrutura inicial
-- [ ] Formulário de criação de ticket
-- [x] Dashboard MVP — apenas estrutura inicial
+- [x] CRUD de usuários (tabela + formulário)
+- [x] Lista de tickets com filtros (busca + status)
+- [x] Página de detalhe do ticket (info + comentários)
+- [x] Formulário de criação de ticket
+- [x] Dashboard com dados reais
 
 ---
 

@@ -6,6 +6,7 @@ import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
 import { AttachmentsController } from './attachments.controller';
 import { AttachmentsService } from './attachments.service';
+import { TicketAuxController } from './ticket-aux.controller';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { AttachmentsService } from './attachments.service';
       dest: './uploads',
     }),
   ],
-  controllers: [TicketsController, CommentsController, AttachmentsController],
+  controllers: [TicketsController, CommentsController, AttachmentsController, TicketAuxController],
   providers: [TicketsService, CommentsService, AttachmentsService],
   exports: [TicketsService],
 })

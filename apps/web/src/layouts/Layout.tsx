@@ -1,7 +1,17 @@
+import { useLocation } from 'react-router-dom';
+import { useAuthStore } from '../store/auth';
 import { Header } from '../components/layout/Header';
 import { Sidebar } from '../components/layout/Sidebar';
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const token = useAuthStore((s) => s.token);
+  const location = useLocation();
+  const isLogin = location.pathname === '/login';
+
+  if (isLogin || !token) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="drawer lg:drawer-open">
       <input id="sidebar-drawer" type="checkbox" className="drawer-toggle" />

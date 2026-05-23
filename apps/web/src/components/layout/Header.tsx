@@ -1,8 +1,16 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useThemeStore } from '../../store/theme';
+import { useAuthStore } from '../../store/auth';
 
 export function Header() {
   const { theme, toggle } = useThemeStore();
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-base-200 bg-base-100/95 backdrop-blur supports-[backdrop-filter]:bg-base-100/80">
@@ -19,12 +27,7 @@ export function Header() {
               viewBox="0 0 24 24"
               className="inline-block w-5 h-5 stroke-current"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </label>
           <Link to="/" className="flex items-center gap-2.5">
@@ -37,7 +40,7 @@ export function Header() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={toggle}
             className="btn btn-ghost btn-sm btn-square"
@@ -55,15 +58,24 @@ export function Header() {
           </button>
 
           <div className="dropdown dropdown-end">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost btn-sm btn-circle avatar"
-            >
-              <div className="w-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-sm font-medium">
-                A
+            <div tabIndex={0} role="button" className="btn btn-ghost btn-sm gap-2">
+              <div className="w-7 h-7 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-medium">
+                {user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
+              <span className="text-sm hidden sm:inline max-w-[120px] truncate">
+                {user?.email}
+              </span>
+              <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
+            <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-lg border border-base-200">
+              <li>
+                <button onClick={handleLogout} className="text-error">
+                  Sair
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

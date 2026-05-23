@@ -1,20 +1,29 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from '../store/auth';
 import { Dashboard } from '../pages/Dashboard';
 import { Tickets } from '../pages/Tickets';
 import { TicketDetail } from '../pages/TicketDetail';
+import { TicketNew } from '../pages/TicketNew';
 import { Users } from '../pages/Users';
 import { Slas } from '../pages/Slas';
 import { Login } from '../pages/Login';
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const token = useAuthStore((s) => s.token);
+  if (!token) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/tickets" element={<Tickets />} />
-      <Route path="/tickets/:id" element={<TicketDetail />} />
-      <Route path="/users" element={<Users />} />
-      <Route path="/slas" element={<Slas />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
+      <Route path="/tickets/new" element={<ProtectedRoute><TicketNew /></ProtectedRoute>} />
+      <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
+      <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+      <Route path="/slas" element={<ProtectedRoute><Slas /></ProtectedRoute>} />
     </Routes>
   );
 }

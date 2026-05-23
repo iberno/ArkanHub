@@ -70,6 +70,7 @@ export interface Role {
   name: string;
   description?: string;
   permissions?: { permission: Permission }[];
+  users?: { user: Pick<User, 'id' | 'name' | 'email'> }[];
 }
 
 export interface Permission {
@@ -96,5 +97,5 @@ export interface SlaRule {
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  user: { id: string; email: string };
+  user: { id: string; email: string; name: string };
 }

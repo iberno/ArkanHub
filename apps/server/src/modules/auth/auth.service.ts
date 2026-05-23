@@ -29,7 +29,7 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    return this.generateTokens(user.id, user.email);
+      return this.generateTokens(user.id, user.email, user.name);
   }
 
   async refresh(refreshToken: string) {
@@ -46,7 +46,7 @@ export class AuthService {
         throw new UnauthorizedException('Usuário não encontrado');
       }
 
-      return this.generateTokens(user.id, user.email);
+    return this.generateTokens(user.id, user.email, user.name);
     } catch {
       throw new UnauthorizedException('Refresh token inválido');
     }
@@ -56,7 +56,7 @@ export class AuthService {
     return { message: 'Sessão encerrada' };
   }
 
-  private generateTokens(userId: string, email: string) {
+  private generateTokens(userId: string, email: string, name: string) {
     const payload = { sub: userId, email };
 
     const accessToken = this.jwtService.sign(payload);
@@ -67,7 +67,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: { id: userId, email },
+      user: { id: userId, email, name },
     };
   }
 }

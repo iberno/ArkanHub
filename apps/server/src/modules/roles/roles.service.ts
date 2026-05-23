@@ -11,6 +11,13 @@ export class RolesService {
         permissions: {
           include: { permission: true },
         },
+        users: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        },
       },
     });
   }

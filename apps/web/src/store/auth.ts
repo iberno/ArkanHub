@@ -3,9 +3,9 @@ import { create } from 'zustand';
 interface AuthStore {
   token: string | null;
   refreshToken: string | null;
-  user: { id: string; email: string } | null;
+  user: { id: string; email: string; name: string } | null;
   isLoading: boolean;
-  setAuth: (data: { accessToken: string; refreshToken: string; user: { id: string; email: string } }) => void;
+  setAuth: (data: { accessToken: string; refreshToken: string; user: { id: string; email: string; name: string } }) => void;
   logout: () => void;
   setLoading: (v: boolean) => void;
 }

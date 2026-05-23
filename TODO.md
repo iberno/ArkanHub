@@ -142,6 +142,40 @@
   - [x] Categoria exibida no detalhe do ticket
 - [x] **Página de Perfil** (/profile) — Editar nome, email, telefone, cargo, senha, avatar
 - [x] **Sidebar** — Link para Categorias e Perfil adicionados
+- [x] **Departamentos duplicados** — Correção: seed usava `create()` em vez de `upsert()`, gerando duplicatas
+  - [x] Script de deduplicação (13 pares, 21 tickets migrados)
+  - [x] Unique constraint `@@unique([name, companyId])` no schema
+  - [x] Seed migrado para `upsert` com chave composta `name|company`
+- [x] **Reatribuição de tickets** — assignedTo em DTOs, histórico + notificação ao reassinar
+  - [x] Botão "Pegar ticket" (assign to self)
+  - [x] UI de reassign no TicketDetailModal (select de técnicos)
+  - [x] Filtros "Meus tickets" e "Não atribuídos" na listagem
+- [x] **Toast notifications** — Zustand store + ToastContainer (DaisyUI .toast)
+  - [x] SocketListener global cria toast ao receber `notification:new`
+  - [x] Auto-dismiss 6s, clique navega para /tickets
+- [x] **Sidebar categorizado por role** — 6 grupos (Dashboard, Atendimento, Administração, Processos, Relatórios, Pessoal)
+  - [x] Itens filtrados por `requiredPermission` via config centralizada em `config/navigation.ts`
+- [x] **Página padrão por role** — Redirecionamento pós-login e rota raiz conforme perfil
+  - [x] admin → Dashboard, technician → /tickets, gestor → /approvals, coord_projetos → /changes, etc.
+- [x] **Roles/permissions no login** — Backend retorna `user.roles[]` e `user.permissions[]`
+  - [x] Auth store expõe `hasPermission(key)` e `hasRole(role)`
+- [x] **Pesquisa de Satisfação** — Modelo TicketSatisfaction (1-5 estrelas + comentário)
+  - [x] Backend: GET/POST /tickets/:id/satisfaction, GET /satisfaction/stats
+  - [x] Frontend: StarRating component + survey UI no TicketDetailModal (só quando Resolvido/Fechado)
+  - [x] `resolvedAt`/`closedAt` automáticos ao mudar status
+- [x] **BI & Relatórios expandido**
+  - [x] Relatório mensal (últimos 12 meses) com criados, resolvidos, variação % (MoM), satisfação
+  - [x] Performance por departamento (tempo médio, SLA%, tickets resolvidos)
+  - [x] Satisfação no overview (média, NPS, distribuição 1-5)
+  - [x] Dashboard com cards de satisfação (média, NPS, gráfico de barras)
+- [x] **Seed de 1200 tickets falsos** — `prisma/seed-1200.ts`
+  - [x] Distribuição realista por status conforme idade (mais antigos → mais resolvidos)
+  - [x] ~240 tickets/mês nos últimos 5 meses
+  - [x] Apenas usuários ArkanHub como atendentes (assignees)
+  - [x] Usuários de outras empresas como solicitantes
+  - [x] ~35% dos resolvidos/fechados com avaliação de satisfação
+  - [x] ~22% com histórico de reatribuição
+  - [x] ~55% com 1-3 comentários
 
 ---
 

@@ -11,6 +11,7 @@ import { PermissionsModule } from './modules/permissions/permissions.module';
 import { SlaModule } from './modules/sla/sla.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { ApprovalsModule } from './modules/approvals/approvals.module';
+import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ApprovalsModule } from './modules/approvals/approvals.module';
     SlaModule,
     AuditModule,
     ApprovalsModule,
+    KnowledgeModule,
   ],
   providers: [
     {

@@ -5,6 +5,7 @@ import {
   Users,
   Clock,
   ClipboardList,
+  BookOpen,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ const menu = [
   { label: 'Usuários', path: '/users', icon: Users },
   { label: 'SLAs', path: '/slas', icon: Clock },
   { label: 'Aprovações', path: '/approvals', icon: ClipboardList },
+  { label: 'Conhecimento', path: '/knowledge', icon: BookOpen },
 ];
 
 export function Sidebar() {

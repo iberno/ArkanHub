@@ -133,6 +133,33 @@ export interface ApprovalHistory {
   createdAt: string;
 }
 
+export interface KnowledgeCategory {
+  id: string;
+  name: string;
+  _count?: { articles: number };
+}
+
+export interface KnowledgeArticle {
+  id: string;
+  title: string;
+  content: string;
+  categoryId?: string;
+  authorId: string;
+  createdAt: string;
+  updatedAt: string;
+  category?: KnowledgeCategory;
+  author?: Pick<User, 'id' | 'name'>;
+  versions?: KnowledgeVersion[];
+}
+
+export interface KnowledgeVersion {
+  id: string;
+  articleId: string;
+  content: string;
+  version: number;
+  createdAt: string;
+}
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;

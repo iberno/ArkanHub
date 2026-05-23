@@ -5,6 +5,7 @@ import { Tickets } from '../pages/Tickets';
 import { Users } from '../pages/Users';
 import { Slas } from '../pages/Slas';
 import { Approvals } from '../pages/Approvals';
+import { Knowledge } from '../pages/Knowledge';
 import { Login } from '../pages/Login';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,7 @@ export function AppRoutes() {
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/slas" element={<ProtectedRoute><Slas /></ProtectedRoute>} />
       <Route path="/approvals" element={<ProtectedRoute><Approvals /></ProtectedRoute>} />
+      <Route path="/knowledge" element={<ProtectedRoute><Knowledge /></ProtectedRoute>} />
     </Routes>
   );
 }

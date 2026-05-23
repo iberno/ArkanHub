@@ -57,17 +57,16 @@ O sistema deverá atender processos de:
 
 | Tecnologia | Finalidade |
 |---|---|
-| Node.js | Runtime |
+| Node.js v24 | Runtime |
 | NestJS | Framework backend |
 | TypeScript | Linguagem principal |
 | Prisma ORM | ORM |
-| PostgreSQL | Banco relacional |
-| Redis | Cache e filas |
-| BullMQ | Processamento assíncrono |
-| JWT | Autenticação |
+| PostgreSQL v18 | Banco relacional |
+| JWT (Passport) | Autenticação |
 | Swagger | Documentação API |
 | Socket.IO | Realtime |
-| Docker | Containerização | (Futuro)
+| bcryptjs | Hash de senhas |
+| @nestjs/throttler | Rate limiter (30 req/60s) |
 
 ---
 
@@ -78,13 +77,13 @@ O sistema deverá atender processos de:
 | React | Frontend |
 | Vite | Build |
 | TypeScript | Linguagem |
-| DaisyUI | TailwindCSS | Estilização |
-| React Query | Cache e requests |
+| DaisyUI 4 | Componentes TailwindCSS |
+| TanStack Query (React Query) | Cache e requests |
 | Zustand | Gerenciamento de estado |
-| React Hook Form | Formulários |
-| Zod | Validações |
 | Axios | HTTP Client |
 | Socket.IO Client | Realtime |
+| React Router | Roteamento |
+| lucide-react | Ícones SVG |
 
 ---
 
@@ -121,198 +120,237 @@ Redis + Filas + Cache
 
 # 5.1 CORE
 
-## Auth
+## Auth (✅ implementado)
 
 Responsável por:
 
-- Login
-- Logout
-- Refresh Token
-- MFA futuro
-- Sessões
-- Controle JWT
+- Login (POST /api/auth/login)
+- Logout (POST /api/auth/logout)
+- Refresh Token (POST /api/auth/refresh)
+- JWT Access Token (15min) + Refresh Token (7 dias) com rotação segura
+- JwtAuthGuard global + `@Public()` para rotas públicas
+- RolesGuard + `@Roles()` para autorização por perfil
 
 ---
 
-## Users
+## Users (✅ implementado)
 
 Responsável por:
 
-- Cadastro usuários
-- Perfis
-- Técnicos
-- Colaboradores
-- Gestão de status
+- CRUD completo (GET, POST, PATCH, DELETE)
+- Associação de perfis (POST/DELETE /users/:id/roles/:roleId)
+- Soft delete
+- Seed inicial: admin@arkanhub.com / admin123
 
 ---
 
-## Roles & Permissions
+## Roles & Permissions (✅ implementado)
 
 RBAC corporativo.
 
-### Exemplo:
+### Perfis implementados:
+
+- **Administrador** — acesso total
+- **Supervisor** — gestão de tickets e equipe
+- **Técnico** — atendimento de tickets
+- **Solicitante** — abertura de tickets
+- **Gestor** — aprovações e relatórios
+
+### Permissões (18 seeds):
 
 ```txt
-Administrador
-Supervisor
-Técnico
-Solicitante
-CAB
-Gestor
+user.create, user.edit, user.delete, user.view
+ticket.create, ticket.edit, ticket.delete, ticket.assign, ticket.close
+sla.create, sla.edit, sla.delete, sla.view
+approval.approve, approval.reject
+workflow.manage
+report.view
+knowledge.manage
 ```
 
 ---
 
-## Notifications
+## Notifications (✅ implementado)
 
-- E-mail
-- Push
-- Internas
-- Realtime
-
----
-
-## Audit
-
-Registro completo:
-
-- Alterações
-- Login
-- Exclusões
-- Aprovações
-- SLA
-- Histórico
+- Internas (CRUD: GET, POST, PATCH read, PATCH read-all, DELETE)
+- Badge de não lidas no header (polling 30s + tempo real via Socket.IO)
+- Frontend: página /notifications
 
 ---
 
-## Files
+## Audit (✅ implementado)
 
-- Upload
-- Download
-- Versionamento futuro
-- Controle de acesso
+Registro completo via Prisma @updatedAt e ticket_histories.
+
+---
+
+## Files (✅ implementado)
+
+- Upload/download de anexos em tickets (multer)
+- Servidos via GET /tickets/:id/attachments/:id/download
 
 ---
 
 # 5.2 ITIL MODULES
 
-## Incidents
+## Incidents / Service Requests (✅ implementado via Tickets)
 
-Gerenciamento de incidentes.
-
-### Fluxo
-
-```txt
-Abertura
-→ Classificação
-→ Priorização
-→ Atendimento
-→ Escalonamento
-→ Resolução
-→ Encerramento
-```
-
----
-
-## Service Requests
-
-Requisições operacionais.
-
-### Exemplos
-
-- Acesso sistema
-- Instalação software
-- Novo usuário
-- Liberação VPN
-
----
-
-## Problems
-
-Controle causa raiz.
-
-### Objetivos
-
-- RCA
-- Workarounds
-- Erros conhecidos
-- Correções definitivas
-
----
-
-## Changes
-
-Gestão de mudanças.
+Gerenciamento de tickets unificado (incidentes + requisições).
 
 ### Fluxo
 
 ```txt
-RFC
-→ Aprovação
-→ Planejamento
-→ Execução
-→ Validação
-→ Encerramento
+Aberto
+→ Em Andamento
+→ Aguardando
+→ Resolvido
+→ Fechado
 ```
+
+### Recursos:
+
+- Protocolo automático
+- Comentários públicos e internos
+- Anexos
+- Histórico de alterações
+- SLA por prioridade
 
 ---
 
-## Knowledge Base
+## Problems (✅ implementado)
+
+Controle de causa raiz.
+
+### Status:
+
+```txt
+open → investigating → root_cause_identified → resolved → closed
+```
+
+### Recursos:
+
+- RCA (Root Cause Analysis)
+- Workaround e solução definitiva
+- Erros conhecidos (KnownError) — vinculados a problemas ou independentes
+- Frontend: página /problems com cards + modais
+
+---
+
+## Changes (✅ implementado)
+
+Gestão de mudanças com aprovação CAB.
+
+### Status:
+
+```txt
+draft → pending_review → approved → rejected → scheduled → implementing → validating → closed
+```
+
+### Recursos:
+
+- Tipos: standard, normal, emergency
+- Níveis de risco: low, medium, high
+- Planos: implementação, rollback, testes
+- Agendamento
+- Aprovação multi-usuário (ChangeApproval)
+- Frontend: página /changes com cards + modais
+
+---
+
+## Knowledge Base (✅ implementado)
 
 Base de conhecimento corporativa.
 
-### Recursos
+### Recursos:
 
-- Artigos
-- FAQ
-- Procedimentos
-- Versionamento
-- Aprovação conteúdo
+- Artigos com categorias
+- Versionamento automático ao alterar conteúdo
+- Restauração de versão anterior
+- Frontend: página /knowledge com grid + modais
 
 ---
 
-## SLA
+## SLA (✅ implementado)
 
-Gestão inteligente de SLA.
+Gestão de SLA.
 
-### Recursos
+### Recursos:
 
-- SLA dinâmico
-- Escalonamento
-- Pausa SLA
-- Reabertura
+- CRUD de SLAs com regras por prioridade
+- Cálculo de SLA via endpoint
 - Horário comercial
-- Feriados
-- VIP
+- Seed: 3 SLAs (Corporativo, VIP, P1)
 
 ---
 
-## Workflows
+## Workflows (✅ implementado)
 
 Motor de automações.
 
-### Exemplo
+### Operadores:
 
 ```txt
-SE categoria = ERP
-ENTÃO atribuir grupo SAP
+equals, not_equals, contains, in, gt, lt
 ```
+
+### Ações:
+
+```txt
+change_status, change_priority, assign_user, add_comment, send_notification
+```
+
+### Recursos:
+
+- Execução automática ao criar/atualizar ticket
+- Histórico de execuções
+- Frontend: página /workflows com cards + modais
 
 ---
 
-## Approvals
+## Approvals (✅ implementado)
 
 Aprovações multinível.
 
-### Fluxo exemplo
+### Fluxo:
 
 ```txt
-Solicitante
-→ Gestor
-→ Segurança
-→ TI
-→ Finalizado
+Passo 1 → Passo 2 → ... → Aprovado/Rejeitado
 ```
+
+### Recursos:
+
+- CRUD de fluxos com etapas ordenadas
+- `currentStep` avança até aprovação total
+- Rejeição encerra fluxo
+- Frontend: página /approvals
+
+---
+
+## BI & Relatórios (✅ implementado)
+
+### Indicadores:
+
+- MTTR (Mean Time to Resolve)
+- MTTA (Mean Time to Acknowledge)
+- SLA compliance
+- Total de tickets, backlog, críticos
+- Distribuição por status, prioridade, categoria
+- Tendência diária (criados vs resolvidos)
+
+### Frontend:
+
+- Página /reports com cards + gráficos CSS (sem lib externa)
+
+---
+
+## Realtime (✅ implementado)
+
+### Socket.IO:
+
+- Namespace `/ws` com autenticação JWT via handshake
+- Salas: `user:{id}` (notificações individuais), `ticket:{id}` (atualizações)
+- Eventos: `ticket:created`, `ticket:updated`, `comment:new`, `notification:new`
+- Vite proxy: `/socket.io` com `ws: true`
 
 ---
 
@@ -382,9 +420,9 @@ workflow.manage
 
 # 8. ESTRUTURA DO BANCO DE DADOS
 
-# Principais Tabelas
+# Principais Tabelas (~36 modelos Prisma)
 
-## Usuários
+## Core
 
 ```sql
 users
@@ -405,6 +443,7 @@ ticket_histories
 ticket_attachments
 ticket_statuses
 ticket_priorities
+ticket_categories
 ```
 
 ---
@@ -414,17 +453,17 @@ ticket_priorities
 ```sql
 slas
 sla_rules
-sla_histories
-sla_events
+business_hours
 ```
 
 ---
 
-## Aprovações
+## Aprovações (Fluxo de Aprovação)
 
 ```sql
 approval_flows
 approval_steps
+approval_requests
 approval_histories
 ```
 
@@ -434,18 +473,45 @@ approval_histories
 
 ```sql
 workflow_rules
-workflow_actions
 workflow_conditions
+workflow_actions
+workflow_executions
 ```
 
 ---
 
-## Auditoria
+## Knowledge Base
 
 ```sql
-audit_logs
-access_logs
-system_logs
+knowledge_articles
+knowledge_categories
+knowledge_versions
+```
+
+---
+
+## Notificações
+
+```sql
+notifications
+```
+
+---
+
+## Problemas
+
+```sql
+problems
+known_errors
+```
+
+---
+
+## Mudanças
+
+```sql
+changes
+change_approvals
 ```
 
 ---
@@ -513,12 +579,14 @@ CREATE TABLE tickets (
 
 # 11. ESTRUTURA API REST
 
+Todas as rotas são prefixadas com `/api` e protegidas por JWT (exceto auth).
+
 # Auth
 
 ```http
-POST /auth/login
-POST /auth/refresh
-POST /auth/logout
+POST /api/auth/login
+POST /api/auth/refresh
+POST /api/auth/logout
 ```
 
 ---
@@ -526,10 +594,35 @@ POST /auth/logout
 # Users
 
 ```http
-GET /users
-POST /users
-PATCH /users/:id
-DELETE /users/:id
+GET    /api/users
+POST   /api/users
+PATCH  /api/users/:id
+DELETE /api/users/:id
+POST   /api/users/:userId/roles/:roleId
+DELETE /api/users/:userId/roles/:roleId
+```
+
+---
+
+# Roles
+
+```http
+GET    /api/roles
+POST   /api/roles
+PATCH  /api/roles/:id
+DELETE /api/roles/:id
+POST   /api/roles/:roleId/permissions/:permissionId
+DELETE /api/roles/:roleId/permissions/:permissionId
+```
+
+---
+
+# Permissions
+
+```http
+GET    /api/permissions
+POST   /api/permissions
+DELETE /api/permissions/:id
 ```
 
 ---
@@ -537,21 +630,24 @@ DELETE /users/:id
 # Tickets
 
 ```http
-GET /tickets
-POST /tickets
-GET /tickets/:id
-PATCH /tickets/:id
-POST /tickets/:id/comments
-POST /tickets/:id/attachments
+GET    /api/tickets
+POST   /api/tickets
+GET    /api/tickets/:id
+PATCH  /api/tickets/:id
+POST   /api/tickets/:ticketId/comments
+GET    /api/tickets/:ticketId/attachments
+POST   /api/tickets/:ticketId/attachments
+GET    /api/tickets/:ticketId/attachments/:id/download
 ```
 
 ---
 
-# Approvals
+# Ticket Aux (statuses, priorities, categories)
 
 ```http
-POST /approvals/:id/approve
-POST /approvals/:id/reject
+GET /api/ticket-statuses
+GET /api/ticket-priorities
+GET /api/ticket-categories
 ```
 
 ---
@@ -559,9 +655,115 @@ POST /approvals/:id/reject
 # SLA
 
 ```http
-GET /slas
-POST /slas
-PATCH /slas/:id
+GET    /api/slas
+POST   /api/slas
+PATCH  /api/slas/:id
+DELETE /api/slas/:id
+POST   /api/slas/:id/calculate
+```
+
+---
+
+# Approval Flows
+
+```http
+GET    /api/approval-flows
+GET    /api/approval-flows/:id
+POST   /api/approval-flows
+PATCH  /api/approval-flows/:id
+DELETE /api/approval-flows/:id
+POST   /api/approval-flows/:flowId/steps
+DELETE /api/approval-flows/:flowId/steps/:stepId
+POST   /api/approval-requests/:id/approve
+POST   /api/approval-requests/:id/reject
+```
+
+---
+
+# Knowledge Base
+
+```http
+GET    /api/knowledge/categories
+POST   /api/knowledge/categories
+DELETE /api/knowledge/categories/:id
+GET    /api/knowledge/articles
+GET    /api/knowledge/articles/:id
+POST   /api/knowledge/articles
+PATCH  /api/knowledge/articles/:id
+DELETE /api/knowledge/articles/:id
+GET    /api/knowledge/articles/:id/versions
+POST   /api/knowledge/articles/:id/versions/:versionId/restore
+```
+
+---
+
+# Notifications
+
+```http
+GET    /api/notifications
+GET    /api/notifications/unread/count
+POST   /api/notifications
+PATCH  /api/notifications/:id/read
+PATCH  /api/notifications/read-all
+DELETE /api/notifications/:id
+```
+
+---
+
+# Workflows
+
+```http
+GET    /api/workflows
+GET    /api/workflows/:id
+POST   /api/workflows
+PATCH  /api/workflows/:id
+DELETE /api/workflows/:id
+POST   /api/workflows/:id/conditions
+DELETE /api/workflows/conditions/:conditionId
+POST   /api/workflows/:id/actions
+DELETE /api/workflows/actions/:actionId
+GET    /api/workflows/executions/all
+POST   /api/workflows/:id/execute/:ticketId
+```
+
+---
+
+# Problems
+
+```http
+GET    /api/problems
+GET    /api/problems/:id
+POST   /api/problems
+PATCH  /api/problems/:id
+DELETE /api/problems/:id
+GET    /api/problems/known-errors/all
+POST   /api/problems/known-errors
+DELETE /api/problems/known-errors/:id
+```
+
+---
+
+# Changes
+
+```http
+GET    /api/changes
+GET    /api/changes/:id
+POST   /api/changes
+PATCH  /api/changes/:id
+DELETE /api/changes/:id
+POST   /api/changes/:id/approvals
+PATCH  /api/changes/approvals/:approvalId
+```
+
+---
+
+# BI & Reports
+
+```http
+GET /api/bi/overview
+GET /api/bi/distribution
+GET /api/bi/trends/:days
+GET /api/bi/trends
 ```
 
 ---
@@ -569,21 +771,26 @@ PATCH /slas/:id
 # 12. ESTRUTURA BACKEND
 
 ```txt
-src/
+apps/server/src/
  ├── modules/
- │    ├── auth/
- │    ├── users/
- │    ├── tickets/
- │    ├── approvals/
- │    ├── sla/
- │    ├── workflows/
- │    └── audit/
+ │    ├── auth/           — Login, JWT, refresh, guards
+ │    ├── users/          — CRUD + role association
+ │    ├── tickets/        — Tickets, comentários, anexos, status/prioridade/categoria aux
+ │    ├── roles/          — CRUD + permission association
+ │    ├── permissions/    — CRUD de permissões
+ │    ├── sla/            — CRUD + cálculo
+ │    ├── approvals/      — Fluxos de aprovação multi-etapas
+ │    ├── knowledge/      — Artigos, categorias, versionamento, restauração
+ │    ├── notifications/  — Notificações internas CRUD
+ │    ├── websocket/      — Socket.IO gateway com JWT + salas
+ │    ├── workflow/       — Regras, condições, ações, execução automática
+ │    ├── problems/       — Problemas + erros conhecidos
+ │    ├── changes/        — Mudanças + aprovações CAB
+ │    └── bi/             — Agregados MTTR, MTTA, tendências, distribuição
  │
- ├── common/
- ├── infra/
- ├── config/
- ├── prisma/
- └── main.ts
+ ├── common/              — Decorators (@Public, @Roles), guards (JwtAuthGuard, RolesGuard)
+ ├── infra/prisma/        — PrismaService
+ └── main.ts              — Bootstrap NestJS
 ```
 
 ---
@@ -591,16 +798,20 @@ src/
 # 13. ESTRUTURA FRONTEND
 
 ```txt
-src/
- ├── pages/
- ├── components/
- ├── layouts/
- ├── hooks/
- ├── routes/
- ├── services/
- ├── store/
- ├── types/
- ├── contexts/
+apps/web/src/
+ ├── pages/            — Dashboard, Tickets, Users, Slas, Approvals, Knowledge,
+ │                        Workflows, Problems, Changes, Reports, Notifications, Login
+ ├── components/       — UI reutilizáveis
+ ├── components/layout/— Sidebar (colapsável w-56/w-64 → w-16 com tooltips), Header
+ ├── hooks/            — useSocket (Socket.IO client)
+ ├── routes/           — AppRoutes com ProtectedRoute
+ ├── services/         — API clients (auth, users, tickets, slas, approvals, knowledge,
+ │                        notifications, workflows, problems, changes, bi)
+ ├── store/            — Zustand stores (auth, sidebar)
+ ├── types/            — TypeScript interfaces (User, Ticket, Role, Permission, Sla,
+ │                        ApprovalFlow, KnowledgeArticle, Notification, WorkflowRule,
+ │                        Problem, Change, etc.)
+ ├── contexts/         — ThemeProvider (wireframe/business + localStorage)
  └── utils/
 ```
 
@@ -690,46 +901,51 @@ tenant_id
 
 # 19. ROADMAP DO PROJETO
 
-# MVP
+# ✅ Fase 1 — MVP (COMPLETO)
 
-## Fase 1
-
-- Login
-- Usuários
-- Tickets
-- Comentários
-- Dashboard básico
-- SLA simples
-
----
-
-## Fase 2
-
-- Aprovações
-- Workflow
-- Realtime
-- Notificações
-- Base conhecimento
+- Login / Refresh / Logout (JWT)
+- Usuários CRUD + RBAC (5 perfis, 18 permissões)
+- Tickets CRUD + comentários + anexos
+- SLA (CRUD + cálculo + horário comercial)
+- Dashboard operacional
+- Toggle tema (wireframe/business)
+- Sidebar colapsável
+- Layout mobile-first até 4K
 
 ---
 
-## Fase 3
+# ✅ Fase 2 (COMPLETO)
 
-- Problemas
-- Mudanças
-- CMDB
-- Relatórios avançados
-- BI
+- Aprovações multinível (fluxos + etapas + approve/reject)
+- Workflow engine (regras, condições, ações, execução automática)
+- Realtime (Socket.IO com JWT, salas user/ticket)
+- Notificações internas (CRUD + badge + tempo real)
+- Base de conhecimento (artigos, categorias, versionamento, restauração)
 
 ---
 
-## Fase 4
+# ✅ Fase 3 (COMPLETO)
 
-- IA
+- Problemas (RCA, workaround, solução, erros conhecidos)
+- Mudanças (RFC, aprovação CAB, planos, status lifecycle)
+- BI & Relatórios avançados (MTTR, MTTA, SLA, distribuição, tendências)
+
+---
+
+## Fase 4 — IA & Automação (Futuro)
+
+- Classificação automática de tickets (NLP)
 - Chatbot
-- NLP
-- Classificação automática
-- Predição SLA
+- Predição de SLA
+- Recomendação de soluções (knowledge base)
+
+---
+
+## Futuro
+
+- CMDB
+- Multi-tenant
+- Microsserviços
 
 ---
 
@@ -864,12 +1080,7 @@ roles
 permissions
 user_roles
 role_permissions
-companies
-departments
 notifications
-audit_logs
-files
-sessions
 ```
 
 ---
@@ -884,7 +1095,6 @@ ticket_attachments
 ticket_statuses
 ticket_priorities
 ticket_categories
-ticket_types
 ```
 
 ---
@@ -894,10 +1104,7 @@ ticket_types
 ```txt
 slas
 sla_rules
-sla_events
-sla_histories
 business_hours
-holidays
 ```
 
 ---
@@ -930,7 +1137,6 @@ workflow_executions
 knowledge_articles
 knowledge_categories
 knowledge_versions
-knowledge_feedbacks
 ```
 
 ---
@@ -939,8 +1145,6 @@ knowledge_feedbacks
 
 ```txt
 changes
-change_tasks
-change_risks
 change_approvals
 ```
 
@@ -950,9 +1154,7 @@ change_approvals
 
 ```txt
 problems
-problem_incidents
 known_errors
-root_causes
 ```
 
 ---
@@ -987,8 +1189,7 @@ tickets N:1 ticket_categories
 
 ```txt
 slas 1:N sla_rules
-slas 1:N tickets
-tickets 1:N sla_events
+slas N:N tickets (via sla_id)
 ```
 
 ---
@@ -1003,6 +1204,56 @@ approval_requests 1:N approval_histories
 
 ---
 
+## Knowledge Base
+
+```txt
+knowledge_categories 1:N knowledge_articles
+knowledge_articles 1:N knowledge_versions
+users 1:N knowledge_articles
+```
+
+---
+
+## Workflows
+
+```txt
+workflow_rules 1:N workflow_conditions
+workflow_rules 1:N workflow_actions
+workflow_rules 1:N workflow_executions
+tickets 1:N workflow_executions
+```
+
+---
+
+## Notificações
+
+```txt
+users 1:N notifications
+```
+
+---
+
+## Problemas
+
+```txt
+users 1:N problems (created_by)
+users 1:N problems (assigned_to)
+problems 1:N known_errors
+```
+
+---
+
+## Mudanças
+
+```txt
+users 1:N changes (requester)
+users 1:N changes (assignee)
+changes 1:N change_approvals
+users 1:N change_approvals (approver)
+```
+
+---
+
 # 26.3 DER EM MERMAID
 
 ```mermaid
@@ -1013,8 +1264,6 @@ erDiagram
         varchar name
         varchar email
         varchar password_hash
-        uuid department_id FK
-        uuid company_id FK
         boolean active
         timestamp created_at
     }
@@ -1039,17 +1288,6 @@ erDiagram
     ROLE_PERMISSIONS {
         uuid role_id FK
         uuid permission_id FK
-    }
-
-    DEPARTMENTS {
-        uuid id PK
-        varchar name
-    }
-
-    COMPANIES {
-        uuid id PK
-        varchar name
-        varchar document
     }
 
     TICKETS {
@@ -1128,13 +1366,6 @@ erDiagram
         varchar impact
     }
 
-    SLA_EVENTS {
-        uuid id PK
-        uuid ticket_id FK
-        varchar event_type
-        timestamp event_time
-    }
-
     APPROVAL_FLOWS {
         uuid id PK
         varchar name
@@ -1185,27 +1416,98 @@ erDiagram
         text payload
     }
 
+    KNOWLEDGE_CATEGORIES {
+        uuid id PK
+        varchar name
+    }
+
     KNOWLEDGE_ARTICLES {
         uuid id PK
         varchar title
         text content
         uuid category_id FK
         uuid author_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    KNOWLEDGE_VERSIONS {
+        uuid id PK
+        uuid article_id FK
+        text content
+        integer version
+    }
+
+    NOTIFICATIONS {
+        uuid id PK
+        uuid user_id FK
+        varchar title
+        text message
+        varchar type
+        boolean read
+        uuid reference_id
+        timestamp created_at
     }
 
     PROBLEMS {
         uuid id PK
         varchar title
+        text description
         text root_cause
+        text workaround
+        text solution
         varchar status
+        uuid created_by FK
+        uuid assigned_to FK
+        timestamp created_at
+        timestamp resolved_at
+    }
+
+    KNOWN_ERRORS {
+        uuid id PK
+        varchar title
+        text description
+        text workaround
+        text solution
+        uuid problem_id FK
+        timestamp created_at
     }
 
     CHANGES {
         uuid id PK
         varchar title
         text description
-        varchar risk
+        varchar type
         varchar status
+        varchar priority
+        varchar risk_level
+        text justification
+        text implementation_plan
+        text rollback_plan
+        text test_plan
+        uuid requester_id FK
+        uuid assignee_id FK
+        timestamp scheduled_at
+        timestamp created_at
+    }
+
+    CHANGE_APPROVALS {
+        uuid id PK
+        uuid change_id FK
+        uuid approved_by FK
+        varchar role
+        varchar status
+        text comments
+        timestamp created_at
+    }
+
+    WORKFLOW_EXECUTIONS {
+        uuid id PK
+        uuid workflow_id FK
+        uuid ticket_id FK
+        varchar status
+        text result
+        timestamp executed_at
     }
 
     USERS ||--o{ USER_ROLES : has
@@ -1213,9 +1515,6 @@ erDiagram
 
     ROLES ||--o{ ROLE_PERMISSIONS : grants
     PERMISSIONS ||--o{ ROLE_PERMISSIONS : assigned
-
-    COMPANIES ||--o{ USERS : owns
-    DEPARTMENTS ||--o{ USERS : contains
 
     USERS ||--o{ TICKETS : requester
     USERS ||--o{ TICKET_COMMENTS : writes
@@ -1229,19 +1528,33 @@ erDiagram
     TICKET_CATEGORIES ||--o{ TICKETS : category
 
     SLAS ||--o{ SLA_RULES : defines
-    SLAS ||--o{ TICKETS : applies
-
-    TICKETS ||--o{ SLA_EVENTS : logs
 
     APPROVAL_FLOWS ||--o{ APPROVAL_STEPS : contains
     APPROVAL_FLOWS ||--o{ APPROVAL_REQUESTS : generates
 
     APPROVAL_REQUESTS ||--o{ APPROVAL_HISTORIES : tracks
+    APPROVAL_REQUESTS ||--o{ TICKETS : approves
 
     WORKFLOW_RULES ||--o{ WORKFLOW_CONDITIONS : defines
     WORKFLOW_RULES ||--o{ WORKFLOW_ACTIONS : executes
+    WORKFLOW_RULES ||--o{ WORKFLOW_EXECUTIONS : logs
 
+    KNOWLEDGE_CATEGORIES ||--o{ KNOWLEDGE_ARTICLES : categorizes
     USERS ||--o{ KNOWLEDGE_ARTICLES : creates
+    KNOWLEDGE_ARTICLES ||--o{ KNOWLEDGE_VERSIONS : versions
+
+    USERS ||--o{ NOTIFICATIONS : receives
+
+    USERS ||--o{ PROBLEMS : reports
+    USERS ||--o{ PROBLEMS : assigned_problems
+    PROBLEMS ||--o{ KNOWN_ERRORS : has
+
+    USERS ||--o{ CHANGES : requests
+    USERS ||--o{ CHANGES : assigned_changes
+    CHANGES ||--o{ CHANGE_APPROVALS : requires
+    USERS ||--o{ CHANGE_APPROVALS : approves
+
+    WORKFLOW_EXECUTIONS ||--o{ TICKETS : executes_on
 
 ```
 

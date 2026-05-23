@@ -106,22 +106,23 @@
 
 ---
 
-## Fase 3
+## Fase 3 ✅
 
-- [ ] **Problemas**
-  - [ ] RCA (Root Cause Analysis)
-  - [ ] Workarounds
-  - [ ] Erros conhecidos
-- [ ] **Mudanças** (Changes)
-  - [ ] RFC
-  - [ ] Aprovação CAB
-  - [ ] Planejamento → Execução → Validação → Encerramento
-- [ ] **Relatórios avançados**
-- [x] **BI** — Indicadores (MTTR, MTTA, CSAT, Backlog)
+- [x] **Problemas**
+  - [x] CRUD de problemas (status: open → investigating → root_cause_identified → resolved → closed)
+  - [x] RCA (Root Cause Analysis) — campos rootCause, workaround, solution
+  - [x] Erros conhecidos (KnownError) vinculados a problemas ou independentes
+  - [x] Frontend: página /problems com cards, modais create/edit/detail + nested known errors
+- [x] **Mudanças** (Changes)
+  - [x] CRUD de mudanças (status: draft → pending_review → approved → rejected → scheduled → implementing → validating → closed)
+  - [x] Aprovação CAB (ChangeApproval com multi-aprovadores)
+  - [x] Planejamento → Execução → Validação → Encerramento (implementationPlan, rollbackPlan, testPlan, scheduledAt)
+  - [x] Frontend: página /changes com cards, modais create/edit/detail + approvals
+- [x] **BI & Relatórios avançados**
   - [x] Overview: total, backlog, críticos, MTTR, MTTA, SLA compliance
   - [x] Distribuição por status, prioridade, categoria
   - [x] Tendência diária (criados vs resolvidos)
-  - [x] Frontend: página /reports com cards + gráficos CSS
+  - [x] Frontend: página /reports com cards + gráficos CSS (sem lib externa)
 - [ ] **CMDB** (futuro)
 
 ---

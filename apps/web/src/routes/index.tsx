@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
+import { getDefaultRoute } from '../config/navigation';
 import { Dashboard } from '../pages/Dashboard';
 import { Tickets } from '../pages/Tickets';
 import { Users } from '../pages/Users';
@@ -24,11 +25,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function HomeRedirect() {
+  const user = useAuthStore((s) => s.user);
+  const defaultRoute = getDefaultRoute(user?.roles ?? []);
+  if (defaultRoute === '/') return <Dashboard />;
+  return <Navigate to={defaultRoute} replace />;
+}
+
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/" element={<ProtectedRoute><HomeRedirect /></ProtectedRoute>} />
       <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
       <Route path="/tickets/new" element={<Navigate to="/tickets" replace />} />
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />

@@ -56,7 +56,7 @@ export class AuthService {
     return { message: 'Sessão encerrada' };
   }
 
-  private generateTokens(userId: string, email: string, name: string) {
+  private async generateTokens(userId: string, email: string, name: string) {
     const payload = { sub: userId, email };
 
     const accessToken = this.jwtService.sign(payload);
@@ -64,10 +64,30 @@ export class AuthService {
       expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any,
     });
 
+    const roles = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: { include: { permission: { select: { key: true } } } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const userRoles = roles?.roles.map((ur) => ur.role.name) ?? [];
+    const permissions = [...new Set(
+      roles?.roles.flatMap((ur) => ur.role.permissions.map((rp) => rp.permission.key)) ?? [],
+    )];
+
     return {
       accessToken,
       refreshToken,
-      user: { id: userId, email, name },
+      user: { id: userId, email, name, roles: userRoles, permissions },
     };
   }
 }

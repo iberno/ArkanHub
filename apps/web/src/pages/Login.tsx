@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { useAuthStore } from '../store/auth';
+import { getDefaultRoute } from '../config/navigation';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -19,7 +20,7 @@ export function Login() {
     try {
       const data = await authService.login(email, password);
       setAuth(data);
-      navigate('/');
+      navigate(getDefaultRoute(data.user.roles));
     } catch {
       setError('Email ou senha inválidos');
     } finally {

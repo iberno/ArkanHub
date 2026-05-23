@@ -1,16 +1,26 @@
 import { create } from 'zustand';
 
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  roles: string[];
+  permissions: string[];
+}
+
 interface AuthStore {
   token: string | null;
   refreshToken: string | null;
-  user: { id: string; email: string; name: string } | null;
+  user: User | null;
   isLoading: boolean;
-  setAuth: (data: { accessToken: string; refreshToken: string; user: { id: string; email: string; name: string } }) => void;
+  hasPermission: (key: string) => boolean;
+  hasRole: (role: string) => boolean;
+  setAuth: (data: { accessToken: string; refreshToken: string; user: User }) => void;
   logout: () => void;
   setLoading: (v: boolean) => void;
 }
 
-function getStored() {
+function getStored(): { token: string | null; refreshToken: string | null; user: User | null } {
   try {
     const token = localStorage.getItem('arkanhub-token');
     const refresh = localStorage.getItem('arkanhub-refresh');
@@ -25,9 +35,17 @@ function getStored() {
   }
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   ...getStored(),
   isLoading: false,
+  hasPermission: (key: string) => {
+    const { user } = get();
+    return user?.permissions?.includes(key) ?? false;
+  },
+  hasRole: (role: string) => {
+    const { user } = get();
+    return user?.roles?.includes(role) ?? false;
+  },
   setAuth: (data) => {
     localStorage.setItem('arkanhub-token', data.accessToken);
     localStorage.setItem('arkanhub-refresh', data.refreshToken);

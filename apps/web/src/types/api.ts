@@ -357,5 +357,5 @@ export interface Notification {
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  user: { id: string; email: string; name: string };
+  user: { id: string; email: string; name: string; roles: string[]; permissions: string[] };
 }

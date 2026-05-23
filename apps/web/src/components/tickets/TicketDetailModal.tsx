@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, CheckCircle, XCircle, Clock, Paperclip, Download, UserCog } from 'lucide-react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Paperclip, Download, UserCog, Star } from 'lucide-react';
 import { ticketsService } from '../../services/tickets';
 import { approvalsService } from '../../services/approvals';
 import { usersService } from '../../services/users';
 import { departmentsService } from '../../services/departments';
+import { satisfactionService } from '../../services/satisfaction';
 import { useAuthStore } from '../../store/auth';
 import { FileUpload } from '../ui/FileUpload';
+import { StarRating } from '../ui/StarRating';
 
 interface Props {
   modalRef: React.RefObject<HTMLDialogElement | null>;
@@ -48,6 +50,32 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
     queryKey: ['ticket-approvals', ticketId],
     queryFn: () => approvalsService.findByTicket(ticketId!),
     enabled: !!ticketId,
+  });
+
+  const isResolvedOrClosed = ticket && (ticket.status?.name === 'Resolvido' || ticket.status?.name === 'Fechado');
+
+  const { data: satisfaction, refetch: refetchSatisfaction } = useQuery({
+    queryKey: ['ticket-satisfaction', ticketId],
+    queryFn: () => satisfactionService.findByTicket(ticketId!),
+    enabled: !!ticketId && !!isResolvedOrClosed,
+  });
+
+  const [satisfactionRating, setSatisfactionRating] = useState(0);
+  const [satisfactionComment, setSatisfactionComment] = useState('');
+
+  useEffect(() => {
+    if (satisfaction) {
+      setSatisfactionRating(satisfaction.rating);
+      setSatisfactionComment(satisfaction.comment || '');
+    } else if (isResolvedOrClosed) {
+      setSatisfactionRating(0);
+      setSatisfactionComment('');
+    }
+  }, [satisfaction, isResolvedOrClosed]);
+
+  const satisfactionMutation = useMutation({
+    mutationFn: () => satisfactionService.upsert(ticketId!, { rating: satisfactionRating, comment: satisfactionComment || undefined }),
+    onSuccess: () => refetchSatisfaction(),
   });
 
   useEffect(() => {
@@ -242,6 +270,48 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
                     </div>
                   )}
                 </section>
+
+                {/* Satisfaction Survey */}
+                {isResolvedOrClosed && (
+                  <section>
+                    <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
+                      <Star size={16} />
+                      Avaliação
+                    </div>
+                    {satisfaction ? (
+                      <div className="bg-base-200 rounded-lg p-3">
+                        <div className="flex items-center gap-3 mb-2">
+                          <StarRating rating={satisfaction.rating} readonly size={22} />
+                          <span className="text-xs text-base-content/50">
+                            {new Date(satisfaction.createdAt).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                        {satisfaction.comment && (
+                          <p className="text-xs text-base-content/70">{satisfaction.comment}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-base-200 rounded-lg p-3">
+                        <p className="text-xs text-base-content/50 mb-2">Como você avalia o atendimento deste ticket?</p>
+                        <StarRating rating={satisfactionRating} onChange={setSatisfactionRating} size={28} />
+                        <textarea
+                          className="textarea textarea-bordered text-sm mt-2 w-full"
+                          rows={2}
+                          placeholder="Deixe um comentário (opcional)..."
+                          value={satisfactionComment}
+                          onChange={(e) => setSatisfactionComment(e.target.value)}
+                        />
+                        <button
+                          className="btn btn-primary btn-sm mt-2 gap-1"
+                          onClick={() => satisfactionMutation.mutate()}
+                          disabled={satisfactionRating === 0 || satisfactionMutation.isPending}
+                        >
+                          {satisfactionMutation.isPending ? <span className="loading loading-spinner loading-xs" /> : 'Enviar avaliação'}
+                        </button>
+                      </div>
+                    )}
+                  </section>
+                )}
 
                 {/* Approvals */}
                 {(approvals ?? []).length > 0 && (

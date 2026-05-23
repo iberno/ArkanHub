@@ -22,6 +22,7 @@ import { ClientsModule } from './modules/clients/clients.module';
 import { WorkflowModule } from './modules/workflow/workflow.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TicketCategoriesModule } from './modules/ticket-categories/ticket-categories.module';
+import { SatisfactionModule } from './modules/satisfaction/satisfaction.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { TicketCategoriesModule } from './modules/ticket-categories/ticket-categ
     NotificationsModule,
     WebsocketModule,
     TicketCategoriesModule,
+    SatisfactionModule,
   ],
   providers: [
     {

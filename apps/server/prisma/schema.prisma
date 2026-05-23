@@ -177,7 +177,21 @@ model Ticket {
   slaEvents   SlaEvent[]
   approvals   ApprovalRequest[]
 
+  satisfaction TicketSatisfaction?
+
   @@map("tickets")
+}
+
+model TicketSatisfaction {
+  id        String   @id @default(uuid()) @db.Uuid
+  ticketId  String   @unique @map("ticket_id") @db.Uuid
+  rating    Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+
+  @@map("ticket_satisfactions")
 }
 
 model TicketStatus {

@@ -135,6 +135,16 @@ export class TicketsService {
       });
     }
 
+    // Auto-set resolvedAt/closedAt when status changes to Resolvido/Fechado
+    if (dto.statusId !== undefined && dto.statusId !== ticket.statusId) {
+      const statuses = await this.prisma.ticketStatus.findMany({
+        where: { id: { in: [dto.statusId, ticket.statusId] } },
+      });
+      const newStatus = statuses.find((s) => s.id === dto.statusId);
+      if (newStatus?.name === 'Resolvido' && !ticket.resolvedAt) data.resolvedAt = new Date();
+      if (newStatus?.name === 'Fechado' && !ticket.closedAt) data.closedAt = new Date();
+    }
+
     const updated = await this.prisma.ticket.update({
       where: { id },
       data,

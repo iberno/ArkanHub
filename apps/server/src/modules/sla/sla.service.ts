@@ -24,6 +24,15 @@ export class SlaService {
     return this.prisma.sla.update({ where: { id }, data });
   }
 
+  async remove(id: string) {
+    const sla = await this.prisma.sla.findUnique({ where: { id } });
+    if (!sla) throw new NotFoundException('SLA não encontrado');
+
+    await this.prisma.slaRule.deleteMany({ where: { slaId: id } });
+    await this.prisma.businessHour.deleteMany({ where: { slaId: id } });
+    return this.prisma.sla.delete({ where: { id } });
+  }
+
   async calculateDeadline(slaId: string, priority: string) {
     const sla = await this.prisma.sla.findUnique({
       where: { id: slaId },

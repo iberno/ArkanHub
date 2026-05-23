@@ -13,7 +13,7 @@
 
 ---
 
-## Fase 1 — MVP
+## Fase 1 — MVP ✅
 
 ### Core
 
@@ -22,15 +22,16 @@
   - [x] POST /auth/refresh
   - [x] POST /auth/logout
   - [x] JWT Access Token (15min) + Refresh Token (7 dias)
-  - [ ] Proteção de rotas com guards (JwtAuthGuard)
-  - [x] Rate limiter + Helmet + CORS
+  - [x] Proteção de rotas com guards (JwtAuthGuard global + @Public())
+  - [x] Rate limiter (@nestjs/throttler: 30 req/min) + Helmet + CORS
 - [x] **Users** — CRUD de usuários
   - [x] GET /users
   - [x] POST /users
   - [x] PATCH /users/:id
   - [x] DELETE /users/:id (soft delete)
-  - [ ] Roles & Permissions (RBAC) — endpoints pendentes
-  - [ ] Seed de perfis: Administrador, Supervisor, Técnico, Solicitante, Gestor
+  - [x] Roles & Permissions (RBAC) — 6 endpoints roles + 3 endpoints permissions
+  - [x] Seed de perfis: admin, supervisor, technician, requester, gestor
+  - [x] Associação Users x Roles (POST/DELETE /users/:id/roles/:roleId)
 - [x] **Tickets** — CRUD de tickets
   - [x] GET /tickets (listagem sem filtros)
   - [x] POST /tickets
@@ -38,30 +39,31 @@
   - [x] PATCH /tickets/:id
   - [x] Protocolo automático
   - [x] Fluxo: statuses (Aberto → Em Andamento → Aguardando → Resolvido → Fechado)
-- [ ] **Comentários** em tickets
-  - [ ] POST /tickets/:id/comments
-  - [ ] Comentários públicos e internos
-- [ ] **Anexos** em tickets
-  - [ ] POST /tickets/:id/attachments
-  - [ ] Upload/download de arquivos
-- [x] **Dashboard básico** (frontend estático)
+- [x] **Comentários** em tickets
+  - [x] POST /tickets/:id/comments
+  - [x] Comentários públicos e internos
+- [x] **Anexos** em tickets
+  - [x] POST /tickets/:id/attachments
+  - [x] Upload/download de arquivos
+- [x] **Dashboard básico** (frontend dinâmico)
   - [x] Tickets abertos
   - [x] Tickets críticos
   - [x] SLA violados
-- [ ] **SLA simples**
-  - [ ] CRUD de SLAs
-  - [ ] Cálculo de SLA por prioridade
-  - [ ] Eventos: iniciado, violado, concluído
+- [x] **SLA simples**
+  - [x] CRUD de SLAs (GET, POST, PATCH, DELETE)
+  - [x] Cálculo de SLA por prioridade (endpoint calculate)
+  - [x] Seed com 3 SLAs (Corporativo, VIP, P1) + regras + horário comercial
 
 ### Frontend
 
 - [x] Tela de login funcional (conectada à API)
-- [x] Layout base com sidebar + header (mobile-first, 4K)
+- [x] Layout base com sidebar + header (mobile-first, 4K, colapsável)
 - [x] Toggle de tema (wireframe/business)
 - [x] CRUD de usuários (tabela + formulário)
+- [x] RBAC: cards de papéis com permissões, edição, associação de usuários
 - [x] Lista de tickets com filtros (busca + status)
 - [x] Página de detalhe do ticket (info + comentários)
-- [x] Formulário de criação de ticket
+- [x] Formulário de criação de ticket (modal)
 - [x] Dashboard com dados reais
 
 ---

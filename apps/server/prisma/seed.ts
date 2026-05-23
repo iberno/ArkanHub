@@ -52,6 +52,7 @@ async function main() {
     { name: 'supervisor', description: 'Supervisão e relatórios' },
     { name: 'technician', description: 'Atendimento de tickets' },
     { name: 'requester', description: 'Abertura de tickets' },
+    { name: 'gestor', description: 'Gestão de equipes e relatórios' },
   ];
 
   const permissionsData = [

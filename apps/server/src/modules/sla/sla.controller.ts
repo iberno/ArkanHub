@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   ParseUUIDPipe,
@@ -37,6 +38,13 @@ export class SlaController {
     @Body() body: Partial<{ name: string; responseTime: number; resolutionTime: number }>,
   ) {
     return this.slaService.update(id, body);
+  }
+
+  @Delete(':id')
+  @Roles('admin')
+  @ApiOperation({ summary: 'Remover SLA' })
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.slaService.remove(id);
   }
 
   @Post(':id/calculate')

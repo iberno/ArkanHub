@@ -112,9 +112,98 @@ async function main() {
     }
   }
 
+  const slasData = [
+    {
+      name: 'SLA Corporativo',
+      responseTime: 60,
+      resolutionTime: 480,
+      slaHours: [
+        { dayOfWeek: 1, startTime: '08:00', endTime: '18:00' },
+        { dayOfWeek: 2, startTime: '08:00', endTime: '18:00' },
+        { dayOfWeek: 3, startTime: '08:00', endTime: '18:00' },
+        { dayOfWeek: 4, startTime: '08:00', endTime: '18:00' },
+        { dayOfWeek: 5, startTime: '08:00', endTime: '18:00' },
+      ],
+      rules: [
+        { priority: 'Crítica', impact: 'alto' },
+        { priority: 'Alta', impact: 'médio' },
+        { priority: 'Média', impact: 'médio' },
+        { priority: 'Baixa', impact: 'baixo' },
+      ],
+    },
+    {
+      name: 'SLA VIP (Diretoria)',
+      responseTime: 15,
+      resolutionTime: 120,
+      slaHours: [
+        { dayOfWeek: 1, startTime: '07:00', endTime: '20:00' },
+        { dayOfWeek: 2, startTime: '07:00', endTime: '20:00' },
+        { dayOfWeek: 3, startTime: '07:00', endTime: '20:00' },
+        { dayOfWeek: 4, startTime: '07:00', endTime: '20:00' },
+        { dayOfWeek: 5, startTime: '07:00', endTime: '20:00' },
+        { dayOfWeek: 6, startTime: '08:00', endTime: '12:00' },
+      ],
+      rules: [
+        { priority: 'Crítica', impact: 'alto' },
+        { priority: 'Alta', impact: 'alto' },
+        { priority: 'Média', impact: 'médio' },
+        { priority: 'Baixa', impact: 'médio' },
+      ],
+    },
+    {
+      name: 'SLA Incidente Crítico (P1)',
+      responseTime: 15,
+      resolutionTime: 240,
+      slaHours: [
+        { dayOfWeek: 1, startTime: '00:00', endTime: '23:59' },
+        { dayOfWeek: 2, startTime: '00:00', endTime: '23:59' },
+        { dayOfWeek: 3, startTime: '00:00', endTime: '23:59' },
+        { dayOfWeek: 4, startTime: '00:00', endTime: '23:59' },
+        { dayOfWeek: 5, startTime: '00:00', endTime: '23:59' },
+        { dayOfWeek: 6, startTime: '00:00', endTime: '23:59' },
+        { dayOfWeek: 0, startTime: '00:00', endTime: '23:59' },
+      ],
+      rules: [
+        { priority: 'Crítica', impact: 'alto' },
+      ],
+    },
+  ];
+
+  const slaPriorities = ['Crítica', 'Alta', 'Média', 'Baixa'];
+  const slaImpacts = ['alto', 'médio', 'baixo'];
+
+  for (const slaData of slasData) {
+    const { rules, slaHours, ...slaFields } = slaData;
+
+    const sla = await prisma.sla.upsert({
+      where: { name: slaFields.name },
+      update: { responseTime: slaFields.responseTime, resolutionTime: slaFields.resolutionTime },
+      create: slaFields,
+    });
+
+    const existingHours = await prisma.businessHour.findMany({ where: { slaId: sla.id } });
+    if (existingHours.length === 0) {
+      for (const hour of slaHours) {
+        await prisma.businessHour.create({
+          data: { slaId: sla.id, ...hour },
+        });
+      }
+    }
+
+    const existingRules = await prisma.slaRule.findMany({ where: { slaId: sla.id } });
+    if (existingRules.length === 0) {
+      for (const rule of rules) {
+        await prisma.slaRule.create({
+          data: { slaId: sla.id, ...rule },
+        });
+      }
+    }
+  }
+
   console.log('Seed concluído com sucesso!');
   console.log(`Admin: admin@arkanhub.com / admin123`);
   console.log(`Roles: ${rolesData.map((r) => r.name).join(', ')}`);
+  console.log(`SLAs: ${slasData.map((s) => s.name).join(', ')}`);
 }
 
 main()

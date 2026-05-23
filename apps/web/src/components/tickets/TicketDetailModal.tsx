@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, CheckCircle, XCircle, Clock, Paperclip, Download } from 'lucide-react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Paperclip, Download, UserCog } from 'lucide-react';
 import { ticketsService } from '../../services/tickets';
 import { approvalsService } from '../../services/approvals';
+import { usersService } from '../../services/users';
+import { departmentsService } from '../../services/departments';
 import { useAuthStore } from '../../store/auth';
 import { FileUpload } from '../ui/FileUpload';
 
@@ -17,11 +19,23 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [isInternal, setIsInternal] = useState(false);
+  const [assigneeId, setAssigneeId] = useState('');
+  const [deptId, setDeptId] = useState('');
 
   const { data: ticket, isLoading } = useQuery({
     queryKey: ['ticket', ticketId],
     queryFn: () => ticketsService.findOne(ticketId!),
     enabled: !!ticketId,
+  });
+
+  const { data: users } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => usersService.findAll(),
+  });
+
+  const { data: departments } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => departmentsService.findAll(),
   });
 
   const { data: attachments, refetch: refetchAttachments } = useQuery({
@@ -36,6 +50,13 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
     enabled: !!ticketId,
   });
 
+  useEffect(() => {
+    if (ticket) {
+      setAssigneeId(ticket.assignedTo || '');
+      setDeptId(ticket.departmentId || '');
+    }
+  }, [ticket]);
+
   const commentMutation = useMutation({
     mutationFn: () => ticketsService.addComment(ticketId!, newComment, isInternal),
     onSuccess: () => {
@@ -48,6 +69,17 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
   const attachmentMutation = useMutation({
     mutationFn: (file: File) => ticketsService.uploadAttachment(ticketId!, file),
     onSuccess: () => refetchAttachments(),
+  });
+
+  const reassignMutation = useMutation({
+    mutationFn: () => ticketsService.update(ticketId!, {
+      assignedTo: assigneeId || null,
+      departmentId: deptId || null,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    },
   });
 
   const approveMutation = useMutation({
@@ -71,6 +103,9 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
     onClose?.();
     modalRef.current?.close();
   };
+
+  const isAssignedToMe = ticket?.assignedTo === user?.id;
+  const isUnassigned = !ticket?.assignedTo;
 
   return (
     <dialog ref={modalRef} className="modal">
@@ -99,6 +134,48 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
               <div className="lg:col-span-2 space-y-4 p-6 pt-0">
+                {/* Reassign */}
+                <section>
+                  <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
+                    <UserCog size={16} />
+                    Reatribuição
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                    <div className="form-control">
+                      <label className="label py-1"><span className="label-text text-xs">Responsável</span></label>
+                      <select className="select select-bordered select-sm" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
+                        <option value="">Não atribuído</option>
+                        {users?.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+                      </select>
+                    </div>
+                    <div className="form-control">
+                      <label className="label py-1"><span className="label-text text-xs">Departamento</span></label>
+                      <select className="select select-bordered select-sm" value={deptId} onChange={(e) => setDeptId(e.target.value)}>
+                        <option value="">Selecione...</option>
+                        {departments?.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isUnassigned && !isAssignedToMe && (
+                      <button
+                        className="btn btn-primary btn-xs gap-1"
+                        onClick={() => { setAssigneeId(user!.id); reassignMutation.mutate(); }}
+                      >
+                        Pegar ticket
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-ghost btn-xs gap-1"
+                      onClick={() => reassignMutation.mutate()}
+                      disabled={reassignMutation.isPending || (assigneeId === (ticket.assignedTo || '') && deptId === (ticket.departmentId || ''))}
+                    >
+                      {reassignMutation.isPending ? <span className="loading loading-spinner loading-xs" /> : 'Salvar reatribuição'}
+                    </button>
+                  </div>
+                </section>
+
+                {/* Comments */}
                 <section>
                   <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
                     <MessageSquare size={16} />
@@ -134,6 +211,7 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
                   </div>
                 </section>
 
+                {/* Attachments */}
                 <section>
                   <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
                     <Paperclip size={16} />
@@ -165,6 +243,7 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
                   )}
                 </section>
 
+                {/* Approvals */}
                 {(approvals ?? []).length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
@@ -256,6 +335,15 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
                     </div>
                   </dl>
                 </section>
+
+                {isUnassigned && (
+                  <button
+                    className="btn btn-primary btn-sm w-full gap-1"
+                    onClick={() => { setAssigneeId(user!.id); reassignMutation.mutate(); }}
+                  >
+                    Pegar ticket
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -2,8 +2,8 @@ import { api } from './api';
 import type { Ticket, TicketComment, TicketAttachment } from '../types/api';
 
 export const ticketsService = {
-  async findAll() {
-    const { data } = await api.get<Ticket[]>('/tickets');
+  async findAll(params?: { assignedTo?: string; unassigned?: boolean }) {
+    const { data } = await api.get<Ticket[]>('/tickets', { params });
     return data;
   },
 
@@ -15,12 +15,13 @@ export const ticketsService = {
   async create(body: {
     title: string; description: string; requesterId: string; statusId: string; priorityId: string;
     categoryId?: string; clientId?: string; onBehalfOfId?: string; departmentId?: string;
+    assignedTo?: string;
   }) {
     const { data } = await api.post<Ticket>('/tickets', body);
     return data;
   },
 
-  async update(id: string, body: Partial<Ticket>) {
+  async update(id: string, body: Record<string, any>) {
     const { data } = await api.patch<Ticket>(`/tickets/${id}`, body);
     return data;
   },

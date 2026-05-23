@@ -5,7 +5,7 @@ import { ticketsService } from '../services/tickets';
 export function Dashboard() {
   const { data: tickets } = useQuery({
     queryKey: ['tickets'],
-    queryFn: ticketsService.findAll,
+    queryFn: () => ticketsService.findAll(),
   });
 
   const total = tickets?.length ?? 0;

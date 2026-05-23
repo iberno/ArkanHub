@@ -4,17 +4,26 @@ import { Search, Plus, ExternalLink } from 'lucide-react';
 import { ticketsService } from '../services/tickets';
 import { TicketCreateModal } from '../components/tickets/TicketCreateModal';
 import { TicketDetailModal } from '../components/tickets/TicketDetailModal';
+import { useAuthStore } from '../store/auth';
+
+type FilterMode = 'all' | 'mine' | 'unassigned';
 
 export function Tickets() {
+  const user = useAuthStore((s) => s.user);
   const createRef = useRef<HTMLDialogElement | null>(null);
   const detailRef = useRef<HTMLDialogElement | null>(null);
   const [detailTicketId, setDetailTicketId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [filterMode, setFilterMode] = useState<FilterMode>('all');
 
   const { data: tickets, isLoading } = useQuery({
-    queryKey: ['tickets'],
-    queryFn: ticketsService.findAll,
+    queryKey: ['tickets', filterMode],
+    queryFn: () => {
+      if (filterMode === 'mine') return ticketsService.findAll({ assignedTo: user!.id });
+      if (filterMode === 'unassigned') return ticketsService.findAll({ unassigned: true });
+      return ticketsService.findAll();
+    },
   });
 
   const filtered = (tickets ?? []).filter((t) => {
@@ -59,7 +68,16 @@ export function Tickets() {
           />
         </label>
         <select
-          className="select select-bordered w-full sm:w-48"
+          className="select select-bordered w-full sm:w-40"
+          value={filterMode}
+          onChange={(e) => setFilterMode(e.target.value as FilterMode)}
+        >
+          <option value="all">Todos</option>
+          <option value="mine">Meus tickets</option>
+          <option value="unassigned">Não atribuídos</option>
+        </select>
+        <select
+          className="select select-bordered w-full sm:w-44"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >

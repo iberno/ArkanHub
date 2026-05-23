@@ -5,6 +5,7 @@ import {
   Body,
   Param,
   Delete,
+  Patch,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -27,6 +28,17 @@ export class RolesController {
   @ApiOperation({ summary: 'Criar papel' })
   async create(@Body('name') name: string, @Body('description') description?: string) {
     return this.rolesService.create(name, description);
+  }
+
+  @Patch(':id')
+  @Roles('admin')
+  @ApiOperation({ summary: 'Atualizar papel' })
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('name') name?: string,
+    @Body('description') description?: string,
+  ) {
+    return this.rolesService.update(id, { name, description });
   }
 
   @Delete(':id')

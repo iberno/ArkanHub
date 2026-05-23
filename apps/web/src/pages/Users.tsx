@@ -1,10 +1,11 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Shield, Users as UsersIcon, Plus, Trash2 } from 'lucide-react';
+import { Shield, Users as UsersIcon, Plus, Pencil, Trash2 } from 'lucide-react';
 import { rolesService } from '../services/roles';
 import { permissionsService } from '../services/permissions';
 import { usersService } from '../services/users';
-import { RoleCreateModal } from '../components/roles/RoleCreateModal';
+import { RoleFormModal } from '../components/roles/RoleFormModal';
+import type { Role } from '../types/api';
 
 const AVATAR_COLORS = [
   'bg-primary', 'bg-secondary', 'bg-accent', 'bg-info',
@@ -24,7 +25,9 @@ function Avatar({ name }: { name: string }) {
 }
 
 export function Users() {
-  const modalRef = useRef<HTMLDialogElement | null>(null);
+  const createRef = useRef<HTMLDialogElement | null>(null);
+  const editRef = useRef<HTMLDialogElement | null>(null);
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
   const queryClient = useQueryClient();
 
   const { data: roles, isLoading: rolesLoading } = useQuery({
@@ -42,14 +45,6 @@ export function Users() {
     queryFn: usersService.findAll,
   });
 
-  const permMutation = useMutation({
-    mutationFn: ({ roleId, permId, assigned }: { roleId: string; permId: string; assigned: boolean }) =>
-      assigned
-        ? rolesService.removePermission(roleId, permId)
-        : rolesService.assignPermission(roleId, permId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['roles'] }),
-  });
-
   const deleteRoleMutation = useMutation({
     mutationFn: (id: string) => rolesService.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['roles'] }),
@@ -63,13 +58,18 @@ export function Users() {
             <Shield size={24} className="text-primary" />
             <h1 className="text-3xl font-bold">Usuários</h1>
           </div>
-          <button className="btn btn-primary" onClick={() => modalRef.current?.showModal()}>
+          <button className="btn btn-primary" onClick={() => createRef.current?.showModal()}>
             <Plus size={18} />
             Novo Papel
           </button>
         </div>
 
-        <RoleCreateModal modalRef={modalRef} permissions={permissions ?? []} />
+        <RoleFormModal modalRef={createRef} permissions={permissions ?? []} />
+        <RoleFormModal
+          modalRef={editRef}
+          permissions={permissions ?? []}
+          role={editingRole ?? undefined}
+        />
 
         {rolesLoading ? (
           <div className="flex justify-center py-12">
@@ -85,9 +85,6 @@ export function Users() {
               const members = role.users ?? [];
               const visible = members.slice(0, 10);
               const remaining = members.length - visible.length;
-              const assignedPermIds = new Set(
-                (role.permissions ?? []).map((rp) => rp.permission.id),
-              );
 
               return (
                 <div key={role.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5">
@@ -103,39 +100,19 @@ export function Users() {
                         )}
                       </div>
                     </div>
-                    <button
-                      className="btn btn-ghost btn-xs text-error shrink-0"
-                      onClick={() => { if (confirm(`Remover papel "${role.name}"?`)) deleteRoleMutation.mutate(role.id); }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-
-                  <div className="border-t border-base-200 pt-3 mb-3">
-                    <p className="text-xs text-base-content/50 mb-2">Permissões</p>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1.5">
-                      {(permissions ?? []).map((p) => {
-                        const assigned = assignedPermIds.has(p.id);
-                        return (
-                          <label
-                            key={p.id}
-                            className={`flex items-center gap-1.5 cursor-pointer text-sm ${
-                              assigned ? 'text-base-content' : 'text-base-content/30'
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              className="checkbox checkbox-xs"
-                              checked={assigned}
-                              disabled={permMutation.isPending}
-                              onChange={() =>
-                                permMutation.mutate({ roleId: role.id, permId: p.id, assigned })
-                              }
-                            />
-                            {p.key}
-                          </label>
-                        );
-                      })}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        className="btn btn-ghost btn-xs"
+                        onClick={() => { setEditingRole(role); editRef.current?.showModal(); }}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-xs text-error"
+                        onClick={() => { if (confirm(`Remover papel "${role.name}"?`)) deleteRoleMutation.mutate(role.id); }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
 

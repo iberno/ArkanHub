@@ -5,6 +5,8 @@ export const rolesService = {
   findAll: () => api.get<Role[]>('/roles').then((r) => r.data),
   create: (data: { name: string; description?: string }) =>
     api.post<Role>('/roles', data).then((r) => r.data),
+  update: (id: string, data: { name?: string; description?: string }) =>
+    api.patch<Role>(`/roles/${id}`, data).then((r) => r.data),
   remove: (id: string) => api.delete(`/roles/${id}`),
   assignPermission: (roleId: string, permissionId: string) =>
     api.post(`/roles/${roleId}/permissions/${permissionId}`),

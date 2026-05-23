@@ -33,6 +33,21 @@ export class RolesService {
     });
   }
 
+  async update(id: string, data: { name?: string; description?: string }) {
+    const role = await this.prisma.role.findUnique({ where: { id } });
+    if (!role) throw new NotFoundException('Papel não encontrado');
+
+    if (data.name && data.name !== role.name) {
+      const existing = await this.prisma.role.findUnique({ where: { name: data.name } });
+      if (existing) throw new ConflictException('Nome de papel já em uso');
+    }
+
+    return this.prisma.role.update({
+      where: { id },
+      data,
+    });
+  }
+
   async remove(id: string) {
     const role = await this.prisma.role.findUnique({ where: { id } });
     if (!role) {

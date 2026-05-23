@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft } from 'lucide-react';
 import { ticketsService } from '../services/tickets';
 
 export function TicketDetail() {
@@ -39,7 +40,7 @@ export function TicketDetail() {
   return (
     <div>
       <div className="mb-4">
-        <Link to="/tickets" className="link link-hover text-sm">&larr; Voltar para tickets</Link>
+        <Link to="/tickets" className="link link-hover text-sm inline-flex items-center gap-1"><ArrowLeft size={14} /> Voltar para tickets</Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

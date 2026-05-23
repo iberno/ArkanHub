@@ -1,12 +1,11 @@
-import { useState } from 'react';
+import { useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Trash2, UserPlus } from 'lucide-react';
 import { usersService } from '../services/users';
+import { UserCreateModal } from '../components/users/UserCreateModal';
 
 export function Users() {
-  const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const modalRef = useRef<HTMLDialogElement | null>(null);
   const queryClient = useQueryClient();
 
   const { data: users, isLoading } = useQuery({
@@ -14,55 +13,22 @@ export function Users() {
     queryFn: usersService.findAll,
   });
 
-  const createMutation = useMutation({
-    mutationFn: () => usersService.create({ name, email, password }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setName('');
-      setEmail('');
-      setPassword('');
-      setShowForm(false);
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (id: string) => usersService.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createMutation.mutate();
-  };
-
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="flex items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold">Usuários</h1>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancelar' : 'Novo Usuário'}
+        <button className="btn btn-primary" onClick={() => modalRef.current?.showModal()}>
+          <UserPlus size={18} />
+          Novo Usuário
         </button>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-6 mb-6 space-y-4 max-w-lg">
-          <div className="form-control">
-            <label className="label"><span className="label-text">Nome</span></label>
-            <input type="text" className="input input-bordered" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
-          <div className="form-control">
-            <label className="label"><span className="label-text">Email</span></label>
-            <input type="email" className="input input-bordered" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div className="form-control">
-            <label className="label"><span className="label-text">Senha</span></label>
-            <input type="password" className="input input-bordered" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-          </div>
-          <button type="submit" className="btn btn-primary" disabled={createMutation.isPending}>
-            {createMutation.isPending ? <span className="loading loading-spinner loading-xs" /> : 'Salvar'}
-          </button>
-        </form>
-      )}
+      <UserCreateModal modalRef={modalRef} />
 
       {isLoading ? (
         <div className="flex justify-center py-12">
@@ -105,7 +71,7 @@ export function Users() {
                         className="btn btn-ghost btn-xs text-error"
                         onClick={() => { if (confirm('Remover usuário?')) deleteMutation.mutate(u.id); }}
                       >
-                        Remover
+                        <Trash2 size={14} />
                       </button>
                     </td>
                   </tr>

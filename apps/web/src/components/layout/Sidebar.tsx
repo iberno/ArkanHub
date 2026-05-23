@@ -1,38 +1,74 @@
 import { NavLink } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Ticket,
+  Users,
+  Clock,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from 'lucide-react';
+import { useSidebarStore } from '../../store/sidebar';
 
 const menu = [
-  { label: 'Dashboard', path: '/', icon: '📊' },
-  { label: 'Tickets', path: '/tickets', icon: '🎫' },
-  { label: 'Usuários', path: '/users', icon: '👥' },
-  { label: 'SLAs', path: '/slas', icon: '⏱' },
+  { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { label: 'Tickets', path: '/tickets', icon: Ticket },
+  { label: 'Usuários', path: '/users', icon: Users },
+  { label: 'SLAs', path: '/slas', icon: Clock },
 ];
 
 export function Sidebar() {
+  const { collapsed, toggle } = useSidebarStore();
+
   return (
     <div className="drawer-side z-50">
       <label htmlFor="sidebar-drawer" className="drawer-overlay" />
-      <aside className="bg-base-100 min-h-screen w-72 xl:w-80 2xl:w-96 overflow-y-auto">
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-base-200">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content font-bold text-sm">
-            A
-          </div>
-          <span className="text-xl font-bold tracking-tight">ArkanHub</span>
+      <aside
+        className={`bg-base-100 min-h-screen border-r border-base-200 transition-all duration-200 ${
+          collapsed ? 'w-16' : 'w-56 xl:w-64'
+        }`}
+      >
+        <div className={`flex items-center border-b border-base-200 h-16 ${collapsed ? 'justify-center px-0' : 'gap-3 px-4'}`}>
+          {!collapsed && (
+            <>
+              <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-primary-content font-bold text-xs shrink-0">
+                A
+              </div>
+              <span className="font-bold tracking-tight">ArkanHub</span>
+            </>
+          )}
+          {collapsed && (
+            <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-primary-content font-bold text-xs">
+              A
+            </div>
+          )}
         </div>
-        <ul className="menu p-4 gap-1">
+
+        <button
+          onClick={toggle}
+          className={`btn btn-ghost btn-sm btn-square mt-2 ${collapsed ? 'mx-auto' : 'ml-2'}`}
+          aria-label={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+        >
+          {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+        </button>
+
+        <ul className={`menu mt-2 ${collapsed ? 'px-1' : 'p-2'} gap-1`}>
           {menu.map((item) => (
             <li key={item.path}>
               <NavLink
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  `flex items-center gap-3 rounded-lg text-sm font-medium transition-colors ${
+                    collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                  } ${
                     isActive
                       ? 'bg-primary/10 text-primary'
                       : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'
                   }`
                 }
+                title={collapsed ? item.label : undefined}
               >
-                <span className="text-lg">{item.icon}</span>
-                {item.label}
+                <item.icon size={20} />
+                {!collapsed && <span>{item.label}</span>}
               </NavLink>
             </li>
           ))}

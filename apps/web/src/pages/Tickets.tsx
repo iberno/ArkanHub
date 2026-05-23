@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { Search, Plus } from 'lucide-react';
 import { ticketsService } from '../services/tickets';
 import { TicketCreateModal } from '../components/tickets/TicketCreateModal';
 
@@ -27,6 +28,7 @@ export function Tickets() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold">Tickets</h1>
         <button className="btn btn-primary" onClick={() => modalRef.current?.showModal()}>
+          <Plus size={18} />
           Novo Ticket
         </button>
       </div>
@@ -35,9 +37,7 @@ export function Tickets() {
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <label className="input input-bordered flex items-center gap-2 flex-1">
-          <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <Search size={16} className="opacity-50" />
           <input
             type="text"
             className="grow"

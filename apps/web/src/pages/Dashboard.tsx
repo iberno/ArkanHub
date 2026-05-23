@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Ticket, AlertTriangle, CheckCircle, Layers } from 'lucide-react';
 import { ticketsService } from '../services/tickets';
 
 export function Dashboard() {
@@ -13,10 +14,10 @@ export function Dashboard() {
   const resolvidos = tickets?.filter((t) => t.status?.name === 'Resolvido' || t.status?.name === 'Fechado').length ?? 0;
 
   const stats = [
-    { label: 'Tickets Abertos', value: abertos, color: 'text-primary' },
-    { label: 'Críticos', value: criticos, color: 'text-error' },
-    { label: 'Resolvidos', value: resolvidos, color: 'text-success' },
-    { label: 'Total', value: total, color: 'text-base-content' },
+    { label: 'Tickets Abertos', value: abertos, icon: Ticket, color: 'text-primary' },
+    { label: 'Críticos', value: criticos, icon: AlertTriangle, color: 'text-error' },
+    { label: 'Resolvidos', value: resolvidos, icon: CheckCircle, color: 'text-success' },
+    { label: 'Total', value: total, icon: Layers, color: 'text-base-content' },
   ];
 
   const statusCount = (tickets ?? []).reduce<Record<string, number>>((acc, t) => {
@@ -30,17 +31,26 @@ export function Dashboard() {
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((s) => (
-          <div key={s.label} className="stat bg-base-100 rounded-box shadow-sm border border-base-200">
-            <div className="stat-title text-sm">{s.label}</div>
-            <div className={`stat-value ${s.color}`}>{s.value}</div>
-          </div>
-        ))}
+        {stats.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.label} className="stat bg-base-100 rounded-box shadow-sm border border-base-200">
+              <div className="flex items-center gap-2 stat-title text-sm">
+                <Icon size={16} className={s.color} />
+                {s.label}
+              </div>
+              <div className={`stat-value ${s.color}`}>{s.value}</div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
         <div className="xl:col-span-2 bg-base-100 rounded-box shadow-sm border border-base-200 p-6">
-          <h2 className="text-lg font-semibold mb-4">Últimos Tickets</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <Ticket size={18} className="text-primary" />
+            <h2 className="text-lg font-semibold">Últimos Tickets</h2>
+          </div>
           {!tickets || tickets.length === 0 ? (
             <p className="text-base-content/50 text-sm">Nenhum ticket encontrado</p>
           ) : (

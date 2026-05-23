@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma/prisma.service';
 import { EventsGateway } from '../websocket/websocket.gateway';
 import { WorkflowService } from '../workflow/workflow.service';
+import { ApprovalsService } from '../approvals/approvals.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 
@@ -11,6 +12,7 @@ export class TicketsService {
     private readonly prisma: PrismaService,
     private readonly events: EventsGateway,
     private readonly workflow: WorkflowService,
+    private readonly approvals: ApprovalsService,
   ) {}
 
   async findAll() {
@@ -47,7 +49,19 @@ export class TicketsService {
 
     this.events.emitToUser(dto.requesterId, 'ticket:created', ticket);
     this.workflow.executeForTicket(ticket.id);
+    this.createDepartmentApproval(ticket);
     return ticket;
+  }
+
+  private async createDepartmentApproval(ticket: any) {
+    if (!ticket.departmentId) return;
+    const dept = await this.prisma.department.findUnique({ where: { id: ticket.departmentId } });
+    if (!dept?.managerId) return;
+    const flow = await this.prisma.approvalFlow.findFirst({ where: { entityType: 'ticket' } });
+    if (!flow) return;
+    try {
+      await this.approvals.createRequest(ticket.id, flow.id);
+    } catch { /* silent */ }
   }
 
   async findOne(id: string) {

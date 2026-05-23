@@ -87,10 +87,23 @@ export class ApprovalsService {
   private async handleAction(requestId: string, userId: string, action: string, comments?: string) {
     const req = await this.prisma.approvalRequest.findUnique({
       where: { id: requestId },
-      include: { flow: { include: { steps: { orderBy: { stepOrder: 'asc' } } } } },
+      include: {
+        flow: { include: { steps: { orderBy: { stepOrder: 'asc' } } } },
+        ticket: true,
+      },
     });
     if (!req) throw new NotFoundException('Solicitação não encontrada');
     if (req.status !== 'pending') throw new BadRequestException('Solicitação já finalizada');
+
+    const currentStep = req.flow.steps[req.currentStep - 1];
+    if (!currentStep) throw new BadRequestException('Etapa inválida');
+
+    // If step is department_manager, verify user is the department manager
+    if (currentStep.approverType === 'department_manager') {
+      if (!req.ticket.departmentId) throw new BadRequestException('Ticket sem departamento');
+      const dept = await this.prisma.department.findUnique({ where: { id: req.ticket.departmentId } });
+      if (!dept || dept.managerId !== userId) throw new BadRequestException('Apenas o gestor do departamento pode aprovar esta etapa');
+    }
 
     const totalSteps = req.flow.steps.length;
 

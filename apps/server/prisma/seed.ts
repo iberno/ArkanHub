@@ -201,6 +201,18 @@ async function main() {
     }
   }
 
+  // Approval flow padrão para tickets com aprovação do gestor do departamento
+  const existingFlow = await prisma.approvalFlow.findFirst({ where: { name: 'Aprovação do Gestor' } });
+  if (!existingFlow) {
+    const flow = await prisma.approvalFlow.create({
+      data: { name: 'Aprovação do Gestor', entityType: 'ticket' },
+    });
+    await prisma.approvalStep.create({
+      data: { flowId: flow.id, stepOrder: 1, approverType: 'department_manager' },
+    });
+    console.log('Fluxo de aprovação padrão criado: Aprovação do Gestor');
+  }
+
   console.log('Seed concluído com sucesso!');
   console.log(`Admin: admin@arkanhub.com / admin123`);
   console.log(`Roles: ${rolesData.map((r) => r.name).join(', ')}`);

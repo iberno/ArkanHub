@@ -15,6 +15,7 @@ import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { WebsocketModule } from './modules/websocket/websocket.module';
 import { BiModule } from './modules/bi/bi.module';
 import { ProblemsModule } from './modules/problems/problems.module';
+import { ChangesModule } from './modules/changes/changes.module';
 import { WorkflowModule } from './modules/workflow/workflow.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
@@ -37,6 +38,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     KnowledgeModule,
     BiModule,
     ProblemsModule,
+    ChangesModule,
     WorkflowModule,
     NotificationsModule,
     WebsocketModule,

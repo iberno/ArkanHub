@@ -28,9 +28,12 @@ model User {
   comments       TicketComment[]
   auditLogs      AuditLog[]
   sessions       Session[]
-  articles         KnowledgeArticle[]
-  problemsReported  Problem[]  @relation("problem_reporter")
-  problemsAssigned  Problem[]  @relation("problem_assignee")
+  articles          KnowledgeArticle[]
+  problemsReported  Problem[]    @relation("problem_reporter")
+  problemsAssigned  Problem[]    @relation("problem_assignee")
+  changesRequested  Change[]        @relation("change_requester")
+  changesAssigned   Change[]        @relation("change_assignee")
+  changeApprovals   ChangeApproval[]
 
   @@map("users")
 }
@@ -467,6 +470,49 @@ model KnownError {
   problem Problem? @relation(fields: [problemId], references: [id])
 
   @@map("known_errors")
+}
+
+model Change {
+  id                String    @id @default(uuid()) @db.Uuid
+  title             String    @db.VarChar(255)
+  description       String    @db.Text
+  type              String    @default("normal") @db.VarChar(20)
+  status            String    @default("draft") @db.VarChar(30)
+  priority          String?   @db.VarChar(20)
+  riskLevel         String?   @map("risk_level") @db.VarChar(20)
+  impact            String?   @db.Text
+  justification     String?   @db.Text
+  implementationPlan String?  @map("implementation_plan") @db.Text
+  rollbackPlan      String?   @map("rollback_plan") @db.Text
+  testPlan          String?   @map("test_plan") @db.Text
+  scheduledAt       DateTime? @map("scheduled_at")
+  implementedAt     DateTime? @map("implemented_at")
+  closedAt          DateTime? @map("closed_at")
+  requesterId       String    @map("requester_id") @db.Uuid
+  assigneeId        String?   @map("assignee_id") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  requester User  @relation("change_requester", fields: [requesterId], references: [id])
+  assignee User?  @relation("change_assignee", fields: [assigneeId], references: [id])
+  approvals ChangeApproval[]
+
+  @@map("changes")
+}
+
+model ChangeApproval {
+  id         String   @id @default(uuid()) @db.Uuid
+  changeId   String   @map("change_id") @db.Uuid
+  approvedBy String   @map("approved_by") @db.Uuid
+  role       String   @db.VarChar(50)
+  status     String   @default("pending") @db.VarChar(20)
+  comments   String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  change  Change @relation(fields: [changeId], references: [id])
+  approver User   @relation(fields: [approvedBy], references: [id])
+
+  @@map("change_approvals")
 }
 
 model Notification {

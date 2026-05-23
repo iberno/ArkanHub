@@ -246,6 +246,43 @@ export interface KnownError {
   problem?: Pick<Problem, 'id' | 'title'>;
 }
 
+export interface Change {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  status: string;
+  priority?: string;
+  riskLevel?: string;
+  impact?: string;
+  justification?: string;
+  implementationPlan?: string;
+  rollbackPlan?: string;
+  testPlan?: string;
+  scheduledAt?: string;
+  implementedAt?: string;
+  closedAt?: string;
+  requesterId: string;
+  assigneeId?: string;
+  createdAt: string;
+  updatedAt: string;
+  requester?: Pick<User, 'id' | 'name' | 'email'>;
+  assignee?: Pick<User, 'id' | 'name' | 'email'>;
+  approvals?: ChangeApproval[];
+  _count?: { approvals: number };
+}
+
+export interface ChangeApproval {
+  id: string;
+  changeId: string;
+  approvedBy: string;
+  role: string;
+  status: string;
+  comments?: string;
+  createdAt: string;
+  approver?: Pick<User, 'id' | 'name' | 'email'>;
+}
+
 export interface WorkflowExecution {
   id: string;
   workflowId: string;

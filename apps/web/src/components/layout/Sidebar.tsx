@@ -10,6 +10,7 @@ import {
   Workflow,
   BarChart3,
   AlertTriangle,
+  GitPullRequest,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -24,6 +25,7 @@ const menu = [
   { label: 'Conhecimento', path: '/knowledge', icon: BookOpen },
   { label: 'Workflows', path: '/workflows', icon: Workflow },
   { label: 'Problemas', path: '/problems', icon: AlertTriangle },
+  { label: 'Mudanças', path: '/changes', icon: GitPullRequest },
   { label: 'BI & Relatórios', path: '/reports', icon: BarChart3 },
   { label: 'Notificações', path: '/notifications', icon: Bell },
 ];

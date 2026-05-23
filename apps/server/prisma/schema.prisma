@@ -281,12 +281,13 @@ model ApprovalStep {
 }
 
 model ApprovalRequest {
-  id           String   @id @default(uuid()) @db.Uuid
-  ticketId     String   @map("ticket_id") @db.Uuid
-  flowId       String   @map("flow_id") @db.Uuid
-  status       String   @default("pending") @db.VarChar(20)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(uuid()) @db.Uuid
+  ticketId    String   @map("ticket_id") @db.Uuid
+  flowId      String   @map("flow_id") @db.Uuid
+  status      String   @default("pending") @db.VarChar(20)
+  currentStep Int      @default(0) @map("current_step")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   ticket  Ticket             @relation(fields: [ticketId], references: [id])
   flow    ApprovalFlow       @relation(fields: [flowId], references: [id])
@@ -298,6 +299,7 @@ model ApprovalRequest {
 model ApprovalHistory {
   id        String   @id @default(uuid()) @db.Uuid
   requestId String   @map("request_id") @db.Uuid
+  stepOrder Int      @default(1) @map("step_order")
   approvedBy String  @map("approved_by") @db.Uuid
   action    String   @db.VarChar(20)
   comments  String?  @db.Text

@@ -10,6 +10,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { SlaModule } from './modules/sla/sla.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { ApprovalsModule } from './modules/approvals/approvals.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AuditModule } from './modules/audit/audit.module';
     PermissionsModule,
     SlaModule,
     AuditModule,
+    ApprovalsModule,
   ],
   providers: [
     {

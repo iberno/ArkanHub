@@ -70,11 +70,13 @@
 
 ## Fase 2
 
-- [ ] **Aprovações** multinível
-  - [ ] Approval flows
-  - [ ] Approval steps
-  - [ ] POST /approvals/:id/approve
-  - [ ] POST /approvals/:id/reject
+- [x] **Aprovações** multinível
+  - [x] CRUD de fluxos (approval-flows)
+  - [x] CRUD de etapas (steps com stepOrder + approverType)
+  - [x] POST /approval-requests/:id/approve
+  - [x] POST /approval-requests/:id/reject
+  - [x] Fluxo multi-etapas (currentStep avança até aprovação total)
+  - [x] Frontend: página /approvals com cards + modais
 - [ ] **Workflow** — Motor de automações
   - [ ] Regras + condições + ações
   - [ ] Execução automática (ex: se categoria ERP → atribuir grupo SAP)

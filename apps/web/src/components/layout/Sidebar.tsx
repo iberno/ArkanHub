@@ -4,6 +4,7 @@ import {
   Ticket,
   Users,
   Clock,
+  ClipboardList,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -14,6 +15,7 @@ const menu = [
   { label: 'Tickets', path: '/tickets', icon: Ticket },
   { label: 'Usuários', path: '/users', icon: Users },
   { label: 'SLAs', path: '/slas', icon: Clock },
+  { label: 'Aprovações', path: '/approvals', icon: ClipboardList },
 ];
 
 export function Sidebar() {

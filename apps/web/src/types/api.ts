@@ -95,6 +95,44 @@ export interface SlaRule {
   impact: string;
 }
 
+export interface ApprovalFlow {
+  id: string;
+  name: string;
+  entityType: string;
+  createdAt: string;
+  steps?: ApprovalStep[];
+}
+
+export interface ApprovalStep {
+  id: string;
+  flowId: string;
+  stepOrder: number;
+  approverType: string;
+  createdAt: string;
+}
+
+export interface ApprovalRequest {
+  id: string;
+  ticketId: string;
+  flowId: string;
+  status: string;
+  currentStep: number;
+  createdAt: string;
+  updatedAt: string;
+  flow?: ApprovalFlow;
+  histories?: ApprovalHistory[];
+}
+
+export interface ApprovalHistory {
+  id: string;
+  requestId: string;
+  stepOrder: number;
+  approvedBy: string;
+  action: string;
+  comments?: string;
+  createdAt: string;
+}
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;

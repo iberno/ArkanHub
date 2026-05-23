@@ -4,6 +4,9 @@ import { PrismaModule } from './infra/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { TicketsModule } from './modules/tickets/tickets.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { PermissionsModule } from './modules/permissions/permissions.module';
+import { SlaModule } from './modules/sla/sla.module';
 import { AuditModule } from './modules/audit/audit.module';
 
 @Module({
@@ -13,6 +16,9 @@ import { AuditModule } from './modules/audit/audit.module';
     AuthModule,
     UsersModule,
     TicketsModule,
+    RolesModule,
+    PermissionsModule,
+    SlaModule,
     AuditModule,
   ],
 })

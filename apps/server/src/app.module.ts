@@ -12,6 +12,7 @@ import { SlaModule } from './modules/sla/sla.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { ApprovalsModule } from './modules/approvals/approvals.module';
 import { KnowledgeModule } from './modules/knowledge/knowledge.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { KnowledgeModule } from './modules/knowledge/knowledge.module';
     AuditModule,
     ApprovalsModule,
     KnowledgeModule,
+    NotificationsModule,
   ],
   providers: [
     {

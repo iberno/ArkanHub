@@ -6,6 +6,7 @@ import {
   Clock,
   ClipboardList,
   BookOpen,
+  Bell,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -18,6 +19,7 @@ const menu = [
   { label: 'SLAs', path: '/slas', icon: Clock },
   { label: 'Aprovações', path: '/approvals', icon: ClipboardList },
   { label: 'Conhecimento', path: '/knowledge', icon: BookOpen },
+  { label: 'Notificações', path: '/notifications', icon: Bell },
 ];
 
 export function Sidebar() {

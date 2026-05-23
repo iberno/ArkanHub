@@ -160,6 +160,16 @@ export interface KnowledgeVersion {
   createdAt: string;
 }
 
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  body: string;
+  read: boolean;
+  type: string;
+  createdAt: string;
+}
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;

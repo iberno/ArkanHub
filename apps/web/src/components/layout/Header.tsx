@@ -1,12 +1,20 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, Moon, Sun, ChevronDown, LogOut } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Menu, Moon, Sun, ChevronDown, LogOut, Bell, BellRing } from 'lucide-react';
 import { useThemeStore } from '../../store/theme';
 import { useAuthStore } from '../../store/auth';
+import { notificationsService } from '../../services/notifications';
 
 export function Header() {
   const { theme, toggle } = useThemeStore();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+
+  const { data: unreadCount } = useQuery({
+    queryKey: ['notifications-unread'],
+    queryFn: notificationsService.countUnread,
+    refetchInterval: 30000,
+  });
 
   const handleLogout = () => {
     logout();
@@ -42,6 +50,29 @@ export function Header() {
           >
             {theme === 'wireframe' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
+
+          <div className="dropdown dropdown-end">
+            <div tabIndex={0} role="button" className="btn btn-ghost btn-sm btn-square relative" aria-label="Notificações">
+              {(unreadCount ?? 0) > 0 ? <BellRing size={18} /> : <Bell size={18} />}
+              {(unreadCount ?? 0) > 0 && (
+                <span className="badge badge-error badge-xs absolute -top-1 -right-1">{unreadCount}</span>
+              )}
+            </div>
+            <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-50 w-80 p-2 shadow-lg border border-base-200 max-h-80 overflow-y-auto">
+              {unreadCount === 0 ? (
+                <li className="text-sm text-base-content/50 p-3 text-center">Nenhuma notificação</li>
+              ) : (
+                <li className="p-2">
+                  <Link to="/notifications" className="text-sm text-primary font-medium" onClick={() => {
+                    const d = document.activeElement as HTMLElement;
+                    d?.blur();
+                  }}>
+                    Ver todas
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </div>
 
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-sm gap-2">

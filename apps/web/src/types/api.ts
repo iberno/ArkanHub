@@ -160,6 +160,40 @@ export interface KnowledgeVersion {
   createdAt: string;
 }
 
+export interface WorkflowRule {
+  id: string;
+  name: string;
+  active: boolean;
+  createdAt: string;
+  conditions?: WorkflowCondition[];
+  actions?: WorkflowAction[];
+  _count?: { executions: number };
+}
+
+export interface WorkflowCondition {
+  id: string;
+  workflowId: string;
+  field: string;
+  operator: string;
+  value: string;
+}
+
+export interface WorkflowAction {
+  id: string;
+  workflowId: string;
+  actionType: string;
+  payload: string;
+}
+
+export interface WorkflowExecution {
+  id: string;
+  workflowId: string;
+  ticketId: string;
+  result: string;
+  executedAt: string;
+  workflow?: Pick<WorkflowRule, 'id' | 'name'>;
+}
+
 export interface Notification {
   id: string;
   userId: string;

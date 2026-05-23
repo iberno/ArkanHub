@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma/prisma.service';
 import { EventsGateway } from '../websocket/websocket.gateway';
+import { WorkflowService } from '../workflow/workflow.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 
@@ -9,6 +10,7 @@ export class TicketsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventsGateway,
+    private readonly workflow: WorkflowService,
   ) {}
 
   async findAll() {
@@ -38,6 +40,7 @@ export class TicketsService {
     });
 
     this.events.emitToUser(dto.requesterId, 'ticket:created', ticket);
+    this.workflow.executeForTicket(ticket.id);
     return ticket;
   }
 
@@ -81,6 +84,7 @@ export class TicketsService {
     });
 
     this.events.emitToTicket(id, 'ticket:updated', updated);
+    this.workflow.executeForTicket(id);
     return updated;
   }
 }

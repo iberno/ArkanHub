@@ -7,6 +7,7 @@ import {
   ClipboardList,
   BookOpen,
   Bell,
+  Workflow,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ const menu = [
   { label: 'SLAs', path: '/slas', icon: Clock },
   { label: 'Aprovações', path: '/approvals', icon: ClipboardList },
   { label: 'Conhecimento', path: '/knowledge', icon: BookOpen },
+  { label: 'Workflows', path: '/workflows', icon: Workflow },
   { label: 'Notificações', path: '/notifications', icon: Bell },
 ];
 

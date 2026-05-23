@@ -13,6 +13,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { ApprovalsModule } from './modules/approvals/approvals.module';
 import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { WebsocketModule } from './modules/websocket/websocket.module';
+import { WorkflowModule } from './modules/workflow/workflow.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
@@ -32,6 +33,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     AuditModule,
     ApprovalsModule,
     KnowledgeModule,
+    WorkflowModule,
     NotificationsModule,
     WebsocketModule,
   ],

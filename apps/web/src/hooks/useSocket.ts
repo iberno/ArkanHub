@@ -16,7 +16,7 @@ export function useSocket() {
     if (!sharedSocket) {
       sharedSocket = io(`${SOCKET_URL}/ws`, {
         auth: { token },
-        transports: ['websocket', 'polling'],
+        transports: ['polling'],
       });
     }
     sharedSubs++;

@@ -117,7 +117,11 @@
   - [ ] Aprovação CAB
   - [ ] Planejamento → Execução → Validação → Encerramento
 - [ ] **Relatórios avançados**
-- [ ] **BI** — Indicadores (MTTR, MTTA, CSAT, Backlog)
+- [x] **BI** — Indicadores (MTTR, MTTA, CSAT, Backlog)
+  - [x] Overview: total, backlog, críticos, MTTR, MTTA, SLA compliance
+  - [x] Distribuição por status, prioridade, categoria
+  - [x] Tendência diária (criados vs resolvidos)
+  - [x] Frontend: página /reports com cards + gráficos CSS
 - [ ] **CMDB** (futuro)
 
 ---

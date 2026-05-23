@@ -28,7 +28,9 @@ model User {
   comments       TicketComment[]
   auditLogs      AuditLog[]
   sessions       Session[]
-  articles       KnowledgeArticle[]
+  articles         KnowledgeArticle[]
+  problemsReported  Problem[]  @relation("problem_reporter")
+  problemsAssigned  Problem[]  @relation("problem_assignee")
 
   @@map("users")
 }
@@ -110,6 +112,7 @@ model Ticket {
   priorityId   String    @map("priority_id") @db.Uuid
   categoryId   String?   @map("category_id") @db.Uuid
   slaId        String?   @map("sla_id") @db.Uuid
+  problemId    String?   @map("problem_id") @db.Uuid
   openedAt     DateTime  @default(now()) @map("opened_at")
   resolvedAt   DateTime? @map("resolved_at")
   closedAt     DateTime? @map("closed_at")
@@ -122,6 +125,7 @@ model Ticket {
   priority    TicketPriority    @relation(fields: [priorityId], references: [id])
   category    TicketCategory?   @relation(fields: [categoryId], references: [id])
   sla         Sla?              @relation(fields: [slaId], references: [id])
+  problem     Problem?          @relation(fields: [problemId], references: [id])
   comments    TicketComment[]
   histories   TicketHistory[]
   attachments TicketAttachment[]
@@ -423,6 +427,46 @@ model AuditLog {
   user User @relation(fields: [userId], references: [id])
 
   @@map("audit_logs")
+}
+
+model Problem {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String    @db.VarChar(255)
+  description String    @db.Text
+  status      String    @default("open") @db.VarChar(50)
+  impact      String?   @db.VarChar(255)
+  urgency     String?   @db.VarChar(50)
+  priority    String?   @db.VarChar(50)
+  rootCause   String?   @map("root_cause") @db.Text
+  solution    String?   @db.Text
+  workaround  String?   @db.Text
+  category    String?   @db.VarChar(100)
+  detectedAt  DateTime  @default(now()) @map("detected_at")
+  resolvedAt  DateTime? @map("resolved_at")
+  reporterId  String    @map("reporter_id") @db.Uuid
+  assigneeId  String?   @map("assignee_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  reporter   User          @relation("problem_reporter", fields: [reporterId], references: [id])
+  assignee   User?         @relation("problem_assignee", fields: [assigneeId], references: [id])
+  tickets    Ticket[]
+  knownErrors KnownError[]
+
+  @@map("problems")
+}
+
+model KnownError {
+  id          String   @id @default(uuid()) @db.Uuid
+  problemId   String?  @map("problem_id") @db.Uuid
+  title       String   @db.VarChar(255)
+  description String   @db.Text
+  workaround  String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  problem Problem? @relation(fields: [problemId], references: [id])
+
+  @@map("known_errors")
 }
 
 model Notification {

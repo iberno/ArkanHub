@@ -14,6 +14,7 @@ import { ApprovalsModule } from './modules/approvals/approvals.module';
 import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { WebsocketModule } from './modules/websocket/websocket.module';
 import { BiModule } from './modules/bi/bi.module';
+import { ProblemsModule } from './modules/problems/problems.module';
 import { WorkflowModule } from './modules/workflow/workflow.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
@@ -35,6 +36,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     ApprovalsModule,
     KnowledgeModule,
     BiModule,
+    ProblemsModule,
     WorkflowModule,
     NotificationsModule,
     WebsocketModule,

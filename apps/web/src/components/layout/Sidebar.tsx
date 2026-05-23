@@ -9,6 +9,7 @@ import {
   Bell,
   Workflow,
   BarChart3,
+  AlertTriangle,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -22,6 +23,7 @@ const menu = [
   { label: 'Aprovações', path: '/approvals', icon: ClipboardList },
   { label: 'Conhecimento', path: '/knowledge', icon: BookOpen },
   { label: 'Workflows', path: '/workflows', icon: Workflow },
+  { label: 'Problemas', path: '/problems', icon: AlertTriangle },
   { label: 'BI & Relatórios', path: '/reports', icon: BarChart3 },
   { label: 'Notificações', path: '/notifications', icon: Bell },
 ];

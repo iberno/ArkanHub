@@ -211,6 +211,41 @@ export interface BiTrend {
   resolved: number;
 }
 
+export interface Problem {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  impact?: string;
+  urgency?: string;
+  priority?: string;
+  rootCause?: string;
+  solution?: string;
+  workaround?: string;
+  category?: string;
+  detectedAt: string;
+  resolvedAt?: string;
+  reporterId: string;
+  assigneeId?: string;
+  createdAt: string;
+  updatedAt: string;
+  reporter?: Pick<User, 'id' | 'name' | 'email'>;
+  assignee?: Pick<User, 'id' | 'name' | 'email'>;
+  tickets?: { id: string; protocol: string; title: string; status: { name: string; color: string } }[];
+  knownErrors?: KnownError[];
+  _count?: { tickets: number; knownErrors: number };
+}
+
+export interface KnownError {
+  id: string;
+  problemId?: string;
+  title: string;
+  description: string;
+  workaround?: string;
+  createdAt: string;
+  problem?: Pick<Problem, 'id' | 'title'>;
+}
+
 export interface WorkflowExecution {
   id: string;
   workflowId: string;

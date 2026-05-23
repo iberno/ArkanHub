@@ -1,0 +1,210 @@
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { MessageSquare, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ticketsService } from '../../services/tickets';
+import { approvalsService } from '../../services/approvals';
+import { useAuthStore } from '../../store/auth';
+
+interface Props {
+  modalRef: React.RefObject<HTMLDialogElement | null>;
+  ticketId: string | null;
+  onClose?: () => void;
+}
+
+export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
+  const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
+  const [newComment, setNewComment] = useState('');
+  const [isInternal, setIsInternal] = useState(false);
+
+  const { data: ticket, isLoading } = useQuery({
+    queryKey: ['ticket', ticketId],
+    queryFn: () => ticketsService.findOne(ticketId!),
+    enabled: !!ticketId,
+  });
+
+  const { data: approvals } = useQuery({
+    queryKey: ['ticket-approvals', ticketId],
+    queryFn: () => approvalsService.findByTicket(ticketId!),
+    enabled: !!ticketId,
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: () => ticketsService.addComment(ticketId!, newComment, isInternal),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] });
+      setNewComment('');
+      setIsInternal(false);
+    },
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (reqId: string) => approvalsService.approve(reqId, user!.id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ticket-approvals', ticketId] }),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (reqId: string) => approvalsService.reject(reqId, user!.id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ticket-approvals', ticketId] }),
+  });
+
+  useEffect(() => {
+    if (!modalRef.current?.open) {
+      setNewComment('');
+      setIsInternal(false);
+    }
+  }, [ticketId, modalRef]);
+
+  const closeModal = () => {
+    onClose?.();
+    modalRef.current?.close();
+  };
+
+  return (
+    <dialog ref={modalRef} className="modal">
+      <div className="modal-box w-full max-w-4xl p-0 overflow-hidden">
+        <button className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 z-10" onClick={closeModal}>
+          ✕
+        </button>
+
+        {isLoading || !ticket ? (
+          <div className="flex justify-center py-16">
+            <span className="loading loading-spinner loading-lg" />
+          </div>
+        ) : (
+          <div className="max-h-[85vh] overflow-y-auto">
+            <div className="p-6 pb-0">
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold break-words">{ticket.title}</h2>
+                  <p className="text-sm text-base-content/50 mt-0.5">
+                    {ticket.protocol} &middot; {new Date(ticket.createdAt).toLocaleString('pt-BR')}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-base-content/70 whitespace-pre-wrap mb-4">{ticket.description}</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
+              <div className="lg:col-span-2 space-y-4 p-6 pt-0">
+                <section>
+                  <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
+                    <MessageSquare size={16} />
+                    Comentários
+                  </div>
+                  {(ticket.comments?.length ?? 0) === 0 ? (
+                    <p className="text-xs text-base-content/40 mb-3">Nenhum comentário</p>
+                  ) : (
+                    <div className="space-y-2 mb-3">
+                      {ticket.comments?.map((c) => (
+                        <div key={c.id} className={`p-3 rounded-lg text-sm ${c.internal ? 'bg-warning/5 border border-warning/20' : 'bg-base-200'}`}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-xs">{c.user.name}</span>
+                            {c.internal && <span className="badge badge-warning badge-xs">Interno</span>}
+                            <span className="text-[10px] text-base-content/40 ml-auto">{new Date(c.createdAt).toLocaleString('pt-BR')}</span>
+                          </div>
+                          <p className="text-xs text-base-content/70">{c.comment}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <textarea className="textarea textarea-bordered text-sm" rows={2} placeholder="Escreva um comentário..." value={newComment} onChange={(e) => setNewComment(e.target.value)} />
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" className="checkbox checkbox-xs" checked={isInternal} onChange={(e) => setIsInternal(e.target.checked)} />
+                        <span className="text-xs">Interno</span>
+                      </label>
+                      <button className="btn btn-primary btn-sm" onClick={() => commentMutation.mutate()} disabled={!newComment.trim() || commentMutation.isPending}>
+                        {commentMutation.isPending ? <span className="loading loading-spinner loading-xs" /> : 'Comentar'}
+                      </button>
+                    </div>
+                  </div>
+                </section>
+
+                {(approvals ?? []).length > 0 && (
+                  <section>
+                    <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
+                      <CheckCircle size={16} />
+                      Aprovações
+                    </div>
+                    <div className="space-y-2">
+                      {approvals?.map((req) => {
+                        const totalSteps = req.flow?.steps?.length ?? 0;
+                        return (
+                          <div key={req.id} className="bg-base-200 rounded-lg p-3 text-sm">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-xs">{req.flow?.name}</span>
+                              <span className={`badge badge-sm ${
+                                req.status === 'approved' ? 'badge-success' :
+                                req.status === 'rejected' ? 'badge-error' : 'badge-ghost'
+                              }`}>{req.status}</span>
+                            </div>
+                            <p className="text-[10px] text-base-content/40 mb-2">
+                              Etapa {req.currentStep}/{totalSteps}
+                            </p>
+                            {req.status === 'pending' && (
+                              <div className="flex items-center gap-2">
+                                <button className="btn btn-success btn-xs gap-1" onClick={() => approveMutation.mutate(req.id)} disabled={approveMutation.isPending}>
+                                  <CheckCircle size={12} /> Aprovar
+                                </button>
+                                <button className="btn btn-error btn-xs gap-1" onClick={() => rejectMutation.mutate(req.id)} disabled={rejectMutation.isPending}>
+                                  <XCircle size={12} /> Rejeitar
+                                </button>
+                              </div>
+                            )}
+                            {req.histories && req.histories.length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                {req.histories.map((h) => (
+                                  <p key={h.id} className="text-[10px] text-base-content/50">
+                                    {h.action === 'approved' ? 'Aprovado' : 'Rejeitado'} por {h.approvedBy} {h.comments && `— ${h.comments}`}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+              </div>
+
+              <div className="border-t lg:border-t-0 lg:border-l border-base-200 p-6 space-y-4">
+                <section>
+                  <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
+                    <Clock size={16} />
+                    Informações
+                  </div>
+                  <dl className="space-y-2.5 text-sm">
+                    <div className="flex justify-between">
+                      <dt className="text-base-content/50 text-xs">Status</dt>
+                      <dd>
+                        <span className="badge badge-sm" style={{ backgroundColor: ticket.status?.color ?? '#888', color: '#fff' }}>{ticket.status?.name}</span>
+                      </dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-base-content/50 text-xs">Prioridade</dt>
+                      <dd className="text-xs font-medium">{ticket.priority?.name}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-base-content/50 text-xs">Solicitante</dt>
+                      <dd className="text-xs">{ticket.requester?.name}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-base-content/50 text-xs">Atribuído</dt>
+                      <dd className="text-xs">{ticket.assignee?.name || '-'}</dd>
+                    </div>
+                  </dl>
+                </section>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={closeModal}>fechar</button>
+      </form>
+    </dialog>
+  );
+}

@@ -2,8 +2,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { Dashboard } from '../pages/Dashboard';
 import { Tickets } from '../pages/Tickets';
-import { TicketDetail } from '../pages/TicketDetail';
-
 import { Users } from '../pages/Users';
 import { Slas } from '../pages/Slas';
 import { Approvals } from '../pages/Approvals';
@@ -22,7 +20,6 @@ export function AppRoutes() {
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
       <Route path="/tickets/new" element={<Navigate to="/tickets" replace />} />
-      <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/slas" element={<ProtectedRoute><Slas /></ProtectedRoute>} />
       <Route path="/approvals" element={<ProtectedRoute><Approvals /></ProtectedRoute>} />

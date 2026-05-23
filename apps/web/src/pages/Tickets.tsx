@@ -1,12 +1,14 @@
 import { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, ExternalLink } from 'lucide-react';
 import { ticketsService } from '../services/tickets';
 import { TicketCreateModal } from '../components/tickets/TicketCreateModal';
+import { TicketDetailModal } from '../components/tickets/TicketDetailModal';
 
 export function Tickets() {
-  const modalRef = useRef<HTMLDialogElement | null>(null);
+  const createRef = useRef<HTMLDialogElement | null>(null);
+  const detailRef = useRef<HTMLDialogElement | null>(null);
+  const [detailTicketId, setDetailTicketId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
 
@@ -23,17 +25,27 @@ export function Tickets() {
 
   const statuses = [...new Set(tickets?.map((t) => t.status?.name).filter(Boolean))];
 
+  const openDetail = (id: string) => {
+    setDetailTicketId(id);
+    detailRef.current?.showModal();
+  };
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold">Tickets</h1>
-        <button className="btn btn-primary" onClick={() => modalRef.current?.showModal()}>
+        <button className="btn btn-primary" onClick={() => createRef.current?.showModal()}>
           <Plus size={18} />
           Novo Ticket
         </button>
       </div>
 
-      <TicketCreateModal modalRef={modalRef} />
+      <TicketCreateModal modalRef={createRef} />
+      <TicketDetailModal
+        modalRef={detailRef}
+        ticketId={detailTicketId}
+        onClose={() => setDetailTicketId(null)}
+      />
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <label className="input input-bordered flex items-center gap-2 flex-1">
@@ -86,7 +98,7 @@ export function Tickets() {
                 </tr>
               ) : (
                 filtered.map((ticket) => (
-                  <tr key={ticket.id} className="hover">
+                  <tr key={ticket.id} className="hover cursor-pointer" onDoubleClick={() => openDetail(ticket.id)}>
                     <td className="font-mono text-xs">{ticket.protocol}</td>
                     <td className="max-w-[200px] lg:max-w-[300px] 2xl:max-w-[500px]">
                       <span className="truncate block">{ticket.title}</span>
@@ -116,9 +128,9 @@ export function Tickets() {
                       {ticket.assignee?.name || '-'}
                     </td>
                     <td>
-                      <Link to={`/tickets/${ticket.id}`} className="btn btn-ghost btn-xs">
-                        Detalhes
-                      </Link>
+                      <button className="btn btn-ghost btn-xs" onClick={() => openDetail(ticket.id)}>
+                        <ExternalLink size={14} />
+                      </button>
                     </td>
                   </tr>
                 ))

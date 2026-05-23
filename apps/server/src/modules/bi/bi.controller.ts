@@ -19,4 +19,10 @@ export class BiController {
 
   @Get('trends')
   getTrendsDefault() { return this.service.getTrends(30); }
+
+  @Get('monthly')
+  getMonthly() { return this.service.getMonthlyReport(); }
+
+  @Get('performance/departments')
+  getPerfDepts() { return this.service.getPerformanceByDepartment(); }
 }

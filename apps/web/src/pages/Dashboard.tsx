@@ -1,11 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import { Ticket, AlertTriangle, CheckCircle, Layers } from 'lucide-react';
+import { Ticket, AlertTriangle, CheckCircle, Layers, Star } from 'lucide-react';
 import { ticketsService } from '../services/tickets';
+import { biService } from '../services/bi';
 
 export function Dashboard() {
   const { data: tickets } = useQuery({
     queryKey: ['tickets'],
     queryFn: () => ticketsService.findAll(),
+  });
+
+  const { data: overview } = useQuery({
+    queryKey: ['bi-overview'],
+    queryFn: biService.overview,
   });
 
   const total = tickets?.length ?? 0;
@@ -19,6 +25,8 @@ export function Dashboard() {
     { label: 'Resolvidos', value: resolvidos, icon: CheckCircle, color: 'text-success' },
     { label: 'Total', value: total, icon: Layers, color: 'text-base-content' },
   ];
+
+  const satisfaction = overview?.satisfaction;
 
   const statusCount = (tickets ?? []).reduce<Record<string, number>>((acc, t) => {
     const name = t.status?.name ?? 'Sem status';
@@ -44,6 +52,44 @@ export function Dashboard() {
           );
         })}
       </div>
+
+      {/* Satisfaction */}
+      {satisfaction && satisfaction.total > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="stat bg-base-100 rounded-box shadow-sm border border-base-200">
+            <div className="flex items-center gap-2 stat-title text-sm">
+              <Star size={16} className="text-warning" />
+              Satisfação Média
+            </div>
+            <div className="stat-value text-warning">{satisfaction.average ?? '—'}</div>
+            <div className="stat-desc text-xs">{satisfaction.total} avaliações</div>
+          </div>
+          <div className="stat bg-base-100 rounded-box shadow-sm border border-base-200">
+            <div className="flex items-center gap-2 stat-title text-sm">
+              <Star size={16} className="text-success" />
+              NPS
+            </div>
+            <div className="stat-value text-success">{satisfaction.nps !== null ? `${satisfaction.nps}%` : '—'}</div>
+            <div className="stat-desc text-xs">Promotores (4-5 estrelas)</div>
+          </div>
+          <div className="stat bg-base-100 rounded-box shadow-sm border border-base-200">
+            <div className="flex items-center gap-2 stat-title text-sm">Distribuição</div>
+            <div className="flex items-end gap-1 h-10 mt-1">
+              {[1,2,3,4,5].map((star) => {
+                const item = satisfaction.distribution.find(d => d.rating === star);
+                const count = item?.count ?? 0;
+                const maxCount = Math.max(...satisfaction.distribution.map(d => d.count), 1);
+                return (
+                  <div key={star} className="flex-1 flex flex-col items-center gap-0.5">
+                    <div className="w-full bg-warning/20 rounded-t" style={{ height: `${(count / maxCount) * 100}%`, minHeight: count > 0 ? 4 : 0 }} />
+                    <span className="text-[10px] text-base-content/50">{star}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
         <div className="xl:col-span-2 bg-base-100 rounded-box shadow-sm border border-base-200 p-6">

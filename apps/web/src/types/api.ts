@@ -249,6 +249,29 @@ export interface BiOverview {
   mttr: number | null;
   mtta: number | null;
   slaCompliance: number | null;
+  satisfaction: {
+    average: number | null;
+    total: number;
+    nps: number | null;
+    distribution: { rating: number; count: number }[];
+  };
+}
+
+export interface BiMonthly {
+  month: string;
+  created: number;
+  resolved: number;
+  satisfactionAvg: number | null;
+  createdChange: number | null;
+  resolvedChange: number | null;
+}
+
+export interface BiDeptPerformance {
+  name: string;
+  totalTickets: number;
+  resolvedTickets: number;
+  avgResolutionTime: number;
+  slaCompliance: number;
 }
 
 export interface BiDistribution {

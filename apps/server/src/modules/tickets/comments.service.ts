@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma/prisma.service';
+import { EventsGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: EventsGateway,
+  ) {}
 
   async findAll(ticketId: string) {
     await this.ensureTicketExists(ticketId);
@@ -25,12 +29,15 @@ export class CommentsService {
   }) {
     await this.ensureTicketExists(data.ticketId);
 
-    return this.prisma.ticketComment.create({
+    const comment = await this.prisma.ticketComment.create({
       data,
       include: {
         user: { select: { id: true, name: true } },
       },
     });
+
+    this.events.emitToTicket(data.ticketId, 'comment:new', comment);
+    return comment;
   }
 
   private async ensureTicketExists(id: string) {

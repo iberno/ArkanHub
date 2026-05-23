@@ -1,20 +1,45 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { Menu, Moon, Sun, ChevronDown, LogOut, Bell, BellRing } from 'lucide-react';
 import { useThemeStore } from '../../store/theme';
 import { useAuthStore } from '../../store/auth';
 import { notificationsService } from '../../services/notifications';
+import { useSocket } from '../../hooks/useSocket';
 
 export function Header() {
   const { theme, toggle } = useThemeStore();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
+  const queryClient = useQueryClient();
+  const socketRef = useSocket();
+
   const { data: unreadCount } = useQuery({
     queryKey: ['notifications-unread'],
     queryFn: notificationsService.countUnread,
     refetchInterval: 30000,
   });
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+    const onUnread = (count: number) => {
+      queryClient.setQueryData(['notifications-unread'], count);
+    };
+    socket.on('notification:unread', onUnread);
+    return () => { socket.off('notification:unread', onUnread); };
+  }, [socketRef.current, queryClient]);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+    const onNew = () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications-unread'] });
+    };
+    socket.on('notification:new', onNew);
+    return () => { socket.off('notification:new', onNew); };
+  }, [socketRef.current, queryClient]);
 
   const handleLogout = () => {
     logout();

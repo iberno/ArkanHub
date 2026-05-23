@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma/prisma.service';
+import { EventsGateway } from '../websocket/websocket.gateway';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 
 @Injectable()
 export class TicketsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: EventsGateway,
+  ) {}
 
   async findAll() {
     return this.prisma.ticket.findMany({
@@ -21,7 +25,7 @@ export class TicketsService {
   async create(dto: CreateTicketDto) {
     const protocol = `TK-${Date.now().toString(36).toUpperCase()}`;
 
-    return this.prisma.ticket.create({
+    const ticket = await this.prisma.ticket.create({
       data: {
         protocol,
         title: dto.title,
@@ -32,6 +36,9 @@ export class TicketsService {
         categoryId: dto.categoryId,
       },
     });
+
+    this.events.emitToUser(dto.requesterId, 'ticket:created', ticket);
+    return ticket;
   }
 
   async findOne(id: string) {
@@ -64,7 +71,7 @@ export class TicketsService {
       throw new NotFoundException('Ticket não encontrado');
     }
 
-    return this.prisma.ticket.update({
+    const updated = await this.prisma.ticket.update({
       where: { id },
       data: dto,
       include: {
@@ -72,5 +79,8 @@ export class TicketsService {
         priority: true,
       },
     });
+
+    this.events.emitToTicket(id, 'ticket:updated', updated);
+    return updated;
   }
 }

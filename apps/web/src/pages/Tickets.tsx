@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ticketsService } from '../services/tickets';
+import { TicketCreateModal } from '../components/tickets/TicketCreateModal';
 
 export function Tickets() {
+  const modalRef = useRef<HTMLDialogElement | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
 
@@ -24,10 +26,12 @@ export function Tickets() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold">Tickets</h1>
-        <Link to="/tickets/new" className="btn btn-primary">
+        <button className="btn btn-primary" onClick={() => modalRef.current?.showModal()}>
           Novo Ticket
-        </Link>
+        </button>
       </div>
+
+      <TicketCreateModal modalRef={modalRef} />
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <label className="input input-bordered flex items-center gap-2 flex-1">

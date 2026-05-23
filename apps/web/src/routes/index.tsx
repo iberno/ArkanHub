@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/auth';
 import { Dashboard } from '../pages/Dashboard';
 import { Tickets } from '../pages/Tickets';
 import { TicketDetail } from '../pages/TicketDetail';
-import { TicketNew } from '../pages/TicketNew';
+
 import { Users } from '../pages/Users';
 import { Slas } from '../pages/Slas';
 import { Login } from '../pages/Login';
@@ -20,7 +20,7 @@ export function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
-      <Route path="/tickets/new" element={<ProtectedRoute><TicketNew /></ProtectedRoute>} />
+      <Route path="/tickets/new" element={<Navigate to="/tickets" replace />} />
       <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/slas" element={<ProtectedRoute><Slas /></ProtectedRoute>} />

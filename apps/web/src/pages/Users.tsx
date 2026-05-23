@@ -8,8 +8,9 @@ import { permissionsService } from '../services/permissions';
 import { usersService } from '../services/users';
 import { RoleFormModal } from '../components/roles/RoleFormModal';
 import { UserCreateModal } from '../components/users/UserCreateModal';
+import { UserEditModal } from '../components/users/UserEditModal';
 import { UserRoleModal } from '../components/roles/UserRoleModal';
-import type { Role } from '../types/api';
+import type { Role, User } from '../types/api';
 
 const AVATAR_COLORS = [
   'bg-primary', 'bg-secondary', 'bg-accent', 'bg-info',
@@ -35,6 +36,8 @@ export function Users() {
   const userRoleRef = useRef<HTMLDialogElement | null>(null);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [managingRole, setManagingRole] = useState<Role | null>(null);
+  const editUserRef = useRef<HTMLDialogElement | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const queryClient = useQueryClient();
 
   const { data: roles, isLoading: rolesLoading } = useQuery({
@@ -82,6 +85,10 @@ export function Users() {
           modalRef={userRoleRef}
           role={managingRole ?? ({} as Role)}
           users={users ?? []}
+        />
+        <UserEditModal
+          modalRef={editUserRef}
+          user={editingUser}
         />
 
         {rolesLoading ? (
@@ -201,7 +208,11 @@ export function Users() {
                   </tr>
                 ) : (
                   users.map((u) => (
-                    <tr key={u.id} className="hover">
+                    <tr
+                      key={u.id}
+                      className="hover cursor-pointer"
+                      onDoubleClick={() => { setEditingUser(u); editUserRef.current?.showModal(); }}
+                    >
                       <td className="flex items-center gap-2">
                         <Avatar name={u.name} />
                         {u.name}

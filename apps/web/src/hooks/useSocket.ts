@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '../store/auth';
 
+const SOCKET_URL = import.meta.env.DEV ? 'http://localhost:3000' : '';
 let sharedSocket: Socket | null = null;
 let sharedSubs = 0;
 
@@ -13,7 +14,7 @@ export function useSocket() {
     if (!token) return;
 
     if (!sharedSocket) {
-      sharedSocket = io('/ws', {
+      sharedSocket = io(`${SOCKET_URL}/ws`, {
         auth: { token },
         transports: ['websocket', 'polling'],
       });

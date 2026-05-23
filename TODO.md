@@ -68,7 +68,7 @@
 
 ---
 
-## Fase 2
+## Fase 2 ✅
 
 - [x] **Aprovações** multinível
   - [x] CRUD de fluxos (approval-flows)
@@ -77,21 +77,32 @@
   - [x] POST /approval-requests/:id/reject
   - [x] Fluxo multi-etapas (currentStep avança até aprovação total)
   - [x] Frontend: página /approvals com cards + modais
-- [ ] **Workflow** — Motor de automações
-  - [ ] Regras + condições + ações
-  - [ ] Execução automática (ex: se categoria ERP → atribuir grupo SAP)
-- [ ] **Realtime** com Socket.IO
-  - [ ] Atualização de tickets
-  - [ ] Chat interno
-  - [ ] SLA countdown
-- [ ] **Notificações**
-  - [ ] E-mail (transacionais)
-  - [ ] Notificações internas (no sistema)
-  - [ ] Push (futuro)
-- [ ] **Base de Conhecimento**
-  - [ ] CRUD de artigos
-  - [ ] Categorias
-  - [ ] Versionamento de artigos
+- [x] **Base de Conhecimento**
+  - [x] CRUD de artigos (GET, POST, PATCH, DELETE)
+  - [x] Categorias (CRUD inline + filtro)
+  - [x] Versionamento automático de artigos (versão criada ao alterar conteúdo)
+  - [x] Restauração de versão anterior
+  - [x] Frontend: página /knowledge com grid, modais create/edit/detail/versões
+- [x] **Notificações** internas
+  - [x] GET /notifications (listar do usuário)
+  - [x] GET /notifications/unread/count
+  - [x] POST /notifications (criar), PATCH /:id/read, PATCH /read-all, DELETE /:id
+  - [x] Sino no header com badge de não lidas (polling 30s)
+  - [x] Frontend: página /notifications com lista completa
+- [x] **Realtime** com Socket.IO
+  - [x] Gateway JWT (namespace /ws, auth via handshake)
+  - [x] Salas user:{id} para notificações individuais
+  - [x] Salas ticket:{id} para atualizações de ticket
+  - [x] Eventos: ticket:created, ticket:updated, comment:new, notification:new, notification:unread
+  - [x] Frontend: useSocket hook + atualização em tempo real do badge notificações
+  - [x] Vite proxy /socket.io com ws: true
+- [x] **Workflow** — Motor de automações
+  - [x] Regras (CRUD: name, active)
+  - [x] Condições (field + operator + value): equals, not_equals, contains, in, gt, lt
+  - [x] Ações (actionType + payload JSON): change_status, change_priority, assign_user, add_comment, send_notification
+  - [x] Execução automática ao criar/atualizar ticket
+  - [x] Histórico de execuções
+  - [x] Frontend: página /workflows com cards, modais condição/ação, toggle ativar, histórico
 
 ---
 

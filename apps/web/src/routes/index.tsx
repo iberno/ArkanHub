@@ -14,6 +14,8 @@ import { Departments } from '../pages/Departments';
 import { Clients } from '../pages/Clients';
 import { Reports } from '../pages/Reports';
 import { Notifications } from '../pages/Notifications';
+import { TicketCategories } from '../pages/TicketCategories';
+import { Profile } from '../pages/Profile';
 import { Login } from '../pages/Login';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -41,6 +43,8 @@ export function AppRoutes() {
       <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+      <Route path="/ticket-categories" element={<ProtectedRoute><TicketCategories /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     </Routes>
   );
 }

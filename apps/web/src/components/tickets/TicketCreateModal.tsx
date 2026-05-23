@@ -5,7 +5,8 @@ import { departmentsService } from '../../services/departments';
 import { clientsService } from '../../services/clients';
 import { useAuthStore } from '../../store/auth';
 import { api } from '../../services/api';
-import type { TicketStatus, TicketPriority } from '../../types/api';
+import { FileUpload } from '../ui/FileUpload';
+import type { TicketStatus, TicketPriority, TicketCategory } from '../../types/api';
 
 interface Props {
   modalRef: React.RefObject<HTMLDialogElement | null>;
@@ -18,9 +19,11 @@ export function TicketCreateModal({ modalRef }: Props) {
   const [description, setDescription] = useState('');
   const [statusId, setStatusId] = useState('');
   const [priorityId, setPriorityId] = useState('');
+  const [categoryId, setCategoryId] = useState('');
   const [clientId, setClientId] = useState('');
   const [onBehalfOfId, setOnBehalfOfId] = useState('');
   const [departmentId, setDepartmentId] = useState('');
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
 
   const { data: statuses } = useQuery({
     queryKey: ['ticket-statuses'],
@@ -30,6 +33,11 @@ export function TicketCreateModal({ modalRef }: Props) {
   const { data: priorities } = useQuery({
     queryKey: ['ticket-priorities'],
     queryFn: () => api.get<TicketPriority[]>('/ticket-priorities').then((r) => r.data),
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ['ticket-categories'],
+    queryFn: () => api.get<TicketCategory[]>('/ticket-categories').then((r) => r.data),
   });
 
   const { data: departments } = useQuery({
@@ -43,13 +51,19 @@ export function TicketCreateModal({ modalRef }: Props) {
   });
 
   const mutation = useMutation({
-    mutationFn: () =>
-      ticketsService.create({
+    mutationFn: async () => {
+      const ticket = await ticketsService.create({
         title, description, requesterId: user!.id, statusId, priorityId,
+        categoryId: categoryId || undefined,
         clientId: clientId || undefined,
         onBehalfOfId: onBehalfOfId || undefined,
         departmentId: departmentId || undefined,
-      }),
+      });
+      if (attachmentFile) {
+        await ticketsService.uploadAttachment(ticket.id, attachmentFile);
+      }
+      return ticket;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       closeModal();
@@ -58,7 +72,8 @@ export function TicketCreateModal({ modalRef }: Props) {
 
   const closeModal = () => {
     setTitle(''); setDescription(''); setStatusId(''); setPriorityId('');
-    setClientId(''); setOnBehalfOfId(''); setDepartmentId('');
+    setCategoryId(''); setClientId(''); setOnBehalfOfId(''); setDepartmentId('');
+    setAttachmentFile(null);
     modalRef.current?.close();
   };
 
@@ -87,7 +102,7 @@ export function TicketCreateModal({ modalRef }: Props) {
               value={description} onChange={(e) => setDescription(e.target.value)} required />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="form-control">
               <label className="label"><span className="label-text">Status</span></label>
               <select className="select select-bordered" value={statusId} onChange={(e) => setStatusId(e.target.value)} required>
@@ -102,6 +117,13 @@ export function TicketCreateModal({ modalRef }: Props) {
                 {priorities?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
+            <div className="form-control">
+              <label className="label"><span className="label-text">Categoria</span></label>
+              <select className="select select-bordered" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+                <option value="">Selecione...</option>
+                {categories?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -113,7 +135,7 @@ export function TicketCreateModal({ modalRef }: Props) {
               </select>
             </div>
             <div className="form-control">
-              <label className="label"><span className="label-text">A pedido de</span></label>
+              <label className="label"><span className="label-text">Beneficiário</span></label>
               <select className="select select-bordered" value={onBehalfOfId} onChange={(e) => setOnBehalfOfId(e.target.value)}>
                 <option value="">Ninguém (solicitação própria)</option>
                 {clients?.filter(c => c.id !== clientId).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -121,12 +143,22 @@ export function TicketCreateModal({ modalRef }: Props) {
             </div>
           </div>
 
-          <div className="form-control">
-            <label className="label"><span className="label-text">Departamento</span></label>
-            <select className="select select-bordered" value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
-              <option value="">Selecione um departamento</option>
-              {departments?.map((d) => <option key={d.id} value={d.id}>{d.name} {d.company ? `(${d.company.name})` : ''}</option>)}
-            </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="form-control">
+              <label className="label"><span className="label-text">Departamento</span></label>
+              <select className="select select-bordered" value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
+                <option value="">Selecione um departamento</option>
+                {departments?.map((d) => <option key={d.id} value={d.id}>{d.name} {d.company ? `(${d.company.name})` : ''}</option>)}
+              </select>
+            </div>
+            <div className="form-control">
+              <label className="label"><span className="label-text">Anexo</span></label>
+              <FileUpload
+                onFileSelect={(f) => setAttachmentFile(f)}
+                accept="*/*"
+                preview={false}
+              />
+            </div>
           </div>
 
           <div className="modal-action">

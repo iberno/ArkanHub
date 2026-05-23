@@ -127,6 +127,24 @@
 
 ---
 
+## Refinamentos & Ajustes ✅
+
+- [x] **Upload de arquivos/imagens** — Componente FileUpload reutilizável com drag & drop + preview
+  - [x] Anexos em tickets: upload na criação e no detalhe
+  - [x] Avatar de usuário: upload com preview no edit modal e perfil
+  - [x] Static file serving via Express (`/uploads`)
+- [x] **Cadastro de usuário** — Campos adicionados: telefone, cargo, empresa, departamento, status
+  - [x] UserCreateModal e UserEditModal com selects de empresa/departamento encadeados
+  - [x] Tabela de usuários com colunas expandidas (avatar, cargo, empresa, departamento, telefone)
+- [x] **"A pedido de" → "Beneficiário"** — Rótulo renomeado no TicketCreateModal e TicketDetailModal
+- [x] **Categorização de tickets** — Seletor de categoria no formulário de criação
+  - [x] Página /ticket-categories com CRUD completo e hierarquia (pai/filho)
+  - [x] Categoria exibida no detalhe do ticket
+- [x] **Página de Perfil** (/profile) — Editar nome, email, telefone, cargo, senha, avatar
+- [x] **Sidebar** — Link para Categorias e Perfil adicionados
+
+---
+
 ## Fase 4 — IA & Automação
 
 - [ ] Classificação automática de tickets (NLP)
@@ -158,7 +176,7 @@
 
 ## Extras / Futuro
 
-- [ ] Multi-tenant (empresas)
+- [x] Multi-tenant (empresas, departamentos, clientes)
 - [ ] White-label
 - [ ] Integração com Active Directory / LDAP
 - [ ] Integração com Microsoft 365 / Teams / Slack

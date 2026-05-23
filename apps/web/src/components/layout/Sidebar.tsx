@@ -14,6 +14,8 @@ import {
   BarChart3,
   AlertTriangle,
   GitPullRequest,
+  Tags,
+  UserCircle,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -26,6 +28,7 @@ const menu = [
   { label: 'Empresas', path: '/companies', icon: Building2 },
   { label: 'Departamentos', path: '/departments', icon: Building },
   { label: 'Clientes', path: '/clients', icon: UserPlus },
+  { label: 'Categorias', path: '/ticket-categories', icon: Tags },
   { label: 'SLAs', path: '/slas', icon: Clock },
   { label: 'Aprovações', path: '/approvals', icon: ClipboardList },
   { label: 'Conhecimento', path: '/knowledge', icon: BookOpen },
@@ -92,6 +95,24 @@ export function Sidebar() {
               </NavLink>
             </li>
           ))}
+          <li className="border-t border-base-200 pt-2 mt-2">
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-lg text-sm font-medium transition-colors ${
+                  collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                } ${
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'
+                }`
+              }
+              title={collapsed ? 'Perfil' : undefined}
+            >
+              <UserCircle size={20} />
+              {!collapsed && <span>Perfil</span>}
+            </NavLink>
+          </li>
         </ul>
       </aside>
     </div>

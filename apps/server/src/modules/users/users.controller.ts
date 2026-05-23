@@ -7,11 +7,17 @@ import {
   Body,
   Param,
   ParseUUIDPipe,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiConsumes } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Users')
 @Controller('users')
@@ -22,6 +28,12 @@ export class UsersController {
   @ApiOperation({ summary: 'Listar usuários' })
   async findAll() {
     return this.usersService.findAll();
+  }
+
+  @Get('me')
+  @ApiOperation({ summary: 'Obter perfil do usuário logado' })
+  async me(@CurrentUser() user: { id: string }) {
+    return this.usersService.findOne(user.id);
   }
 
   @Post()
@@ -61,5 +73,27 @@ export class UsersController {
     @Param('roleId', ParseUUIDPipe) roleId: string,
   ) {
     return this.usersService.removeRole(userId, roleId);
+  }
+
+  @Post('avatar')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload de avatar' })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/avatars',
+        filename: (_req, file, cb) => {
+          const uniqueName = `avatar-${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+          cb(null, uniqueName);
+        },
+      }),
+    }),
+  )
+  async uploadAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: { id: string },
+  ) {
+    const avatarUrl = `/uploads/avatars/${file.filename}`;
+    return this.usersService.update(user.id, { avatarUrl } as any);
   }
 }

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Paperclip, Download } from 'lucide-react';
 import { ticketsService } from '../../services/tickets';
 import { approvalsService } from '../../services/approvals';
 import { useAuthStore } from '../../store/auth';
+import { FileUpload } from '../ui/FileUpload';
 
 interface Props {
   modalRef: React.RefObject<HTMLDialogElement | null>;
@@ -23,6 +24,12 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
     enabled: !!ticketId,
   });
 
+  const { data: attachments, refetch: refetchAttachments } = useQuery({
+    queryKey: ['ticket-attachments', ticketId],
+    queryFn: () => ticketsService.getAttachments(ticketId!),
+    enabled: !!ticketId,
+  });
+
   const { data: approvals } = useQuery({
     queryKey: ['ticket-approvals', ticketId],
     queryFn: () => approvalsService.findByTicket(ticketId!),
@@ -36,6 +43,11 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
       setNewComment('');
       setIsInternal(false);
     },
+  });
+
+  const attachmentMutation = useMutation({
+    mutationFn: (file: File) => ticketsService.uploadAttachment(ticketId!, file),
+    onSuccess: () => refetchAttachments(),
   });
 
   const approveMutation = useMutation({
@@ -122,6 +134,37 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
                   </div>
                 </section>
 
+                <section>
+                  <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
+                    <Paperclip size={16} />
+                    Anexos
+                  </div>
+                  <div className="mb-3">
+                    <FileUpload
+                      onFileSelect={(file) => attachmentMutation.mutate(file)}
+                      accept="*/*"
+                      preview={false}
+                    />
+                  </div>
+                  {(!attachments || attachments.length === 0) ? (
+                    <p className="text-xs text-base-content/40">Nenhum anexo</p>
+                  ) : (
+                    <div className="space-y-1">
+                      {attachments.map((a) => (
+                        <a
+                          key={a.id}
+                          href={`/api/tickets/${ticketId}/attachments/${a.id}/download`}
+                          className="flex items-center gap-2 text-xs text-primary hover:underline p-1.5 rounded hover:bg-base-200"
+                        >
+                          <Download size={12} />
+                          {a.fileName}
+                          <span className="text-base-content/30 ml-auto">{new Date(a.createdAt).toLocaleDateString('pt-BR')}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
                 {(approvals ?? []).length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 font-semibold mb-3 text-sm">
@@ -188,6 +231,10 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
                       <dd className="text-xs font-medium">{ticket.priority?.name}</dd>
                     </div>
                     <div className="flex justify-between">
+                      <dt className="text-base-content/50 text-xs">Categoria</dt>
+                      <dd className="text-xs">{ticket.category?.name || '-'}</dd>
+                    </div>
+                    <div className="flex justify-between">
                       <dt className="text-base-content/50 text-xs">Solicitante</dt>
                       <dd className="text-xs">{ticket.requester?.name}</dd>
                     </div>
@@ -200,7 +247,7 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
                       <dd className="text-xs">{ticket.client?.name || '-'}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-base-content/50 text-xs">A pedido de</dt>
+                      <dt className="text-base-content/50 text-xs">Beneficiário</dt>
                       <dd className="text-xs">{ticket.onBehalfOf?.name || '-'}</dd>
                     </div>
                     <div className="flex justify-between">

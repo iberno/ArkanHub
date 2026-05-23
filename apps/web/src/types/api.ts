@@ -2,9 +2,16 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
+  position?: string;
+  avatarUrl?: string;
   active: boolean;
+  companyId?: string;
+  departmentId?: string;
   createdAt: string;
   updatedAt?: string;
+  company?: Pick<Company, 'id' | 'name'>;
+  department?: Pick<Department, 'id' | 'name'>;
   roles?: { role: Pick<Role, 'id' | 'name'> }[];
 }
 

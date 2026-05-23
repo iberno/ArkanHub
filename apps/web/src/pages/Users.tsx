@@ -17,7 +17,17 @@ const AVATAR_COLORS = [
   'bg-success', 'bg-warning', 'bg-error', 'bg-neutral',
 ];
 
-function Avatar({ name }: { name: string }) {
+function Avatar({ name, url }: { name: string; url?: string | null }) {
+  if (url) {
+    return (
+      <img
+        src={url}
+        alt={name}
+        className="w-8 h-8 rounded-full object-cover shrink-0"
+        title={name}
+      />
+    );
+  }
   const colorIdx = name.charCodeAt(0) % AVATAR_COLORS.length;
   return (
     <div
@@ -193,16 +203,19 @@ export function Users() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Nome</th>
-                  <th>Email</th>
+                  <th>Usuário</th>
+                  <th className="hidden sm:table-cell">Cargo</th>
+                  <th className="hidden md:table-cell">Empresa</th>
+                  <th className="hidden lg:table-cell">Departamento</th>
+                  <th className="hidden xl:table-cell">Telefone</th>
                   <th>Status</th>
-                  <th>Criado em</th>
+                  <th className="hidden sm:table-cell">Criado em</th>
                 </tr>
               </thead>
               <tbody>
                 {(!users || users.length === 0) ? (
                   <tr>
-                    <td colSpan={4} className="text-center text-base-content/50 py-8">
+                    <td colSpan={7} className="text-center text-base-content/50 py-8">
                       Nenhum usuário encontrado
                     </td>
                   </tr>
@@ -213,17 +226,25 @@ export function Users() {
                       className="hover cursor-pointer"
                       onDoubleClick={() => { setEditingUser(u); editUserRef.current?.showModal(); }}
                     >
-                      <td className="flex items-center gap-2">
-                        <Avatar name={u.name} />
-                        {u.name}
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <Avatar name={u.name} url={u.avatarUrl} />
+                          <div>
+                            <div className="text-sm font-medium">{u.name}</div>
+                            <div className="text-xs text-base-content/50">{u.email}</div>
+                          </div>
+                        </div>
                       </td>
-                      <td className="text-sm">{u.email}</td>
+                      <td className="hidden sm:table-cell text-sm">{u.position || '-'}</td>
+                      <td className="hidden md:table-cell text-sm">{u.company?.name || '-'}</td>
+                      <td className="hidden lg:table-cell text-sm">{u.department?.name || '-'}</td>
+                      <td className="hidden xl:table-cell text-sm">{u.phone || '-'}</td>
                       <td>
                         <span className={`badge badge-sm ${u.active ? 'badge-success' : 'badge-ghost'}`}>
                           {u.active ? 'Ativo' : 'Inativo'}
                         </span>
                       </td>
-                      <td className="text-sm text-base-content/60">
+                      <td className="hidden sm:table-cell text-sm text-base-content/60">
                         {new Date(u.createdAt).toLocaleDateString('pt-BR')}
                       </td>
                     </tr>

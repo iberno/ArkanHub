@@ -8,6 +8,7 @@ import {
   BookOpen,
   Bell,
   Workflow,
+  BarChart3,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ const menu = [
   { label: 'Aprovações', path: '/approvals', icon: ClipboardList },
   { label: 'Conhecimento', path: '/knowledge', icon: BookOpen },
   { label: 'Workflows', path: '/workflows', icon: Workflow },
+  { label: 'BI & Relatórios', path: '/reports', icon: BarChart3 },
   { label: 'Notificações', path: '/notifications', icon: Bell },
 ];
 

@@ -185,6 +185,32 @@ export interface WorkflowAction {
   payload: string;
 }
 
+export interface BiOverview {
+  total: number;
+  abertos: number;
+  emAndamento: number;
+  aguardando: number;
+  resolvidos: number;
+  fechados: number;
+  backlog: number;
+  criticos: number;
+  mttr: number | null;
+  mtta: number | null;
+  slaCompliance: number | null;
+}
+
+export interface BiDistribution {
+  byStatus: { name: string; count: number }[];
+  byPriority: { name: string; count: number }[];
+  byCategory: { name: string; count: number }[];
+}
+
+export interface BiTrend {
+  date: string;
+  created: number;
+  resolved: number;
+}
+
 export interface WorkflowExecution {
   id: string;
   workflowId: string;

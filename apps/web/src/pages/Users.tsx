@@ -1,23 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
-import { Shield, Users as UsersIcon } from 'lucide-react';
+import { useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Shield, Users as UsersIcon, Plus, Trash2 } from 'lucide-react';
 import { rolesService } from '../services/roles';
+import { permissionsService } from '../services/permissions';
+import { usersService } from '../services/users';
+import { RoleCreateModal } from '../components/roles/RoleCreateModal';
 
 const AVATAR_COLORS = [
-  'bg-primary',
-  'bg-secondary',
-  'bg-accent',
-  'bg-info',
-  'bg-success',
-  'bg-warning',
-  'bg-error',
-  'bg-neutral',
+  'bg-primary', 'bg-secondary', 'bg-accent', 'bg-info',
+  'bg-success', 'bg-warning', 'bg-error', 'bg-neutral',
 ];
 
-function Avatar({ name, className }: { name: string; className?: string }) {
+function Avatar({ name }: { name: string }) {
   const colorIdx = name.charCodeAt(0) % AVATAR_COLORS.length;
   return (
     <div
-      className={`w-8 h-8 rounded-full ${AVATAR_COLORS[colorIdx]} text-primary-content flex items-center justify-center text-xs font-semibold shrink-0 ${className ?? ''}`}
+      className={`w-8 h-8 rounded-full ${AVATAR_COLORS[colorIdx]} text-primary-content flex items-center justify-center text-xs font-semibold shrink-0`}
       title={name}
     >
       {name.charAt(0).toUpperCase()}
@@ -26,91 +24,198 @@ function Avatar({ name, className }: { name: string; className?: string }) {
 }
 
 export function Users() {
-  const { data: roles, isLoading } = useQuery({
+  const modalRef = useRef<HTMLDialogElement | null>(null);
+  const queryClient = useQueryClient();
+
+  const { data: roles, isLoading: rolesLoading } = useQuery({
     queryKey: ['roles'],
     queryFn: rolesService.findAll,
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <span className="loading loading-spinner loading-lg" />
-      </div>
-    );
-  }
+  const { data: permissions } = useQuery({
+    queryKey: ['permissions'],
+    queryFn: permissionsService.findAll,
+  });
 
-  if (!roles || roles.length === 0) {
-    return (
-      <div className="text-center text-base-content/50 py-12">
-        Nenhum papel encontrado
-      </div>
-    );
-  }
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: ['users'],
+    queryFn: usersService.findAll,
+  });
+
+  const permMutation = useMutation({
+    mutationFn: ({ roleId, permId, assigned }: { roleId: string; permId: string; assigned: boolean }) =>
+      assigned
+        ? rolesService.removePermission(roleId, permId)
+        : rolesService.assignPermission(roleId, permId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['roles'] }),
+  });
+
+  const deleteRoleMutation = useMutation({
+    mutationFn: (id: string) => rolesService.remove(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['roles'] }),
+  });
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Shield size={24} className="text-primary" />
-        <h1 className="text-3xl font-bold">Papéis & Permissões</h1>
-      </div>
+    <div className="space-y-10">
+      <section>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <Shield size={24} className="text-primary" />
+            <h1 className="text-3xl font-bold">Usuários</h1>
+          </div>
+          <button className="btn btn-primary" onClick={() => modalRef.current?.showModal()}>
+            <Plus size={18} />
+            Novo Papel
+          </button>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {roles.map((role) => {
-          const members = role.users ?? [];
-          const visible = members.slice(0, 10);
-          const remaining = members.length - visible.length;
+        <RoleCreateModal modalRef={modalRef} permissions={permissions ?? []} />
 
-          return (
-            <div key={role.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Shield size={20} className="text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-semibold truncate">{role.name}</h3>
-                  {role.description && (
-                    <p className="text-xs text-base-content/50 truncate">{role.description}</p>
-                  )}
-                </div>
-              </div>
+        {rolesLoading ? (
+          <div className="flex justify-center py-12">
+            <span className="loading loading-spinner loading-lg" />
+          </div>
+        ) : !roles || roles.length === 0 ? (
+          <div className="text-center text-base-content/50 py-12 bg-base-100 rounded-box border border-base-200">
+            Nenhum papel encontrado
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {roles.map((role) => {
+              const members = role.users ?? [];
+              const visible = members.slice(0, 10);
+              const remaining = members.length - visible.length;
+              const assignedPermIds = new Set(
+                (role.permissions ?? []).map((rp) => rp.permission.id),
+              );
 
-              {role.permissions && role.permissions.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {role.permissions.map((rp) => (
-                    <span key={rp.permission.id} className="badge badge-sm badge-outline badge-ghost">
-                      {rp.permission.key}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div className="border-t border-base-200 pt-3">
-                <div className="flex items-center gap-1.5 mb-2 text-xs text-base-content/60">
-                  <UsersIcon size={14} />
-                  <span>{members.length} {members.length === 1 ? 'usuário' : 'usuários'}</span>
-                </div>
-
-                {members.length > 0 ? (
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex -space-x-2">
-                      {visible.map((ur) => (
-                        <Avatar key={ur.user.id} name={ur.user.name} />
-                      ))}
+              return (
+                <div key={role.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <Shield size={20} className="text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold truncate">{role.name}</h3>
+                        {role.description && (
+                          <p className="text-xs text-base-content/50 truncate">{role.description}</p>
+                        )}
+                      </div>
                     </div>
-                    {remaining > 0 && (
-                      <span className="text-xs text-base-content/40 font-medium ml-1">
-                        +{remaining}
-                      </span>
+                    <button
+                      className="btn btn-ghost btn-xs text-error shrink-0"
+                      onClick={() => { if (confirm(`Remover papel "${role.name}"?`)) deleteRoleMutation.mutate(role.id); }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
+                  <div className="border-t border-base-200 pt-3 mb-3">
+                    <p className="text-xs text-base-content/50 mb-2">Permissões</p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                      {(permissions ?? []).map((p) => {
+                        const assigned = assignedPermIds.has(p.id);
+                        return (
+                          <label
+                            key={p.id}
+                            className={`flex items-center gap-1.5 cursor-pointer text-sm ${
+                              assigned ? 'text-base-content' : 'text-base-content/30'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              className="checkbox checkbox-xs"
+                              checked={assigned}
+                              disabled={permMutation.isPending}
+                              onChange={() =>
+                                permMutation.mutate({ roleId: role.id, permId: p.id, assigned })
+                              }
+                            />
+                            {p.key}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-base-200 pt-3">
+                    <div className="flex items-center gap-1.5 mb-2 text-xs text-base-content/60">
+                      <UsersIcon size={14} />
+                      <span>{members.length} {members.length === 1 ? 'usuário' : 'usuários'}</span>
+                    </div>
+
+                    {members.length > 0 ? (
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex -space-x-2">
+                          {visible.map((ur) => (
+                            <Avatar key={ur.user.id} name={ur.user.name} />
+                          ))}
+                        </div>
+                        {remaining > 0 && (
+                          <span className="text-xs text-base-content/40 font-medium ml-1">+{remaining}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-base-content/30 italic">Nenhum usuário vinculado</p>
                     )}
                   </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h2 className="text-xl font-bold mb-4">Lista de Usuários</h2>
+
+        {usersLoading ? (
+          <div className="flex justify-center py-8">
+            <span className="loading loading-spinner loading-md" />
+          </div>
+        ) : (
+          <div className="overflow-x-auto bg-base-100 rounded-box shadow-sm border border-base-200">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Criado em</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(!users || users.length === 0) ? (
+                  <tr>
+                    <td colSpan={4} className="text-center text-base-content/50 py-8">
+                      Nenhum usuário encontrado
+                    </td>
+                  </tr>
                 ) : (
-                  <p className="text-xs text-base-content/30 italic">Nenhum usuário vinculado</p>
+                  users.map((u) => (
+                    <tr key={u.id} className="hover">
+                      <td className="flex items-center gap-2">
+                        <Avatar name={u.name} />
+                        {u.name}
+                      </td>
+                      <td className="text-sm">{u.email}</td>
+                      <td>
+                        <span className={`badge badge-sm ${u.active ? 'badge-success' : 'badge-ghost'}`}>
+                          {u.active ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                      <td className="text-sm text-base-content/60">
+                        {new Date(u.createdAt).toLocaleDateString('pt-BR')}
+                      </td>
+                    </tr>
+                  ))
                 )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

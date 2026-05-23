@@ -12,7 +12,7 @@ import { useSidebarStore } from '../../store/sidebar';
 const menu = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard },
   { label: 'Tickets', path: '/tickets', icon: Ticket },
-  { label: 'Papéis', path: '/users', icon: Users },
+  { label: 'Usuários', path: '/users', icon: Users },
   { label: 'SLAs', path: '/slas', icon: Clock },
 ];
 

@@ -17,7 +17,7 @@ function pickN<T>(arr: T[], n: number): T[] {
   return shuffled.slice(0, Math.min(n, shuffled.length));
 }
 
-function weightedPick<T extends string>(items: { value: T; weight: number }[]): T {
+function weightedPick<T>(items: { value: T; weight: number }[]): T {
   const total = items.reduce((s, i) => s + i.weight, 0);
   let r = Math.random() * total;
   for (const item of items) {
@@ -160,6 +160,25 @@ const SATISFACTION_COMMENTS = [
 // ── Main ─────────────────────────────────────────────────
 
 async function main() {
+  // Cleanup: delete all fake tickets (those with sequential TK-XXXX protocols)
+  console.log('Limpando tickets gerados anteriormente...');
+  const fakeTickets = await prisma.ticket.findMany({
+    where: { protocol: { startsWith: 'TK-' } },
+    select: { id: true },
+  });
+  const fakeIds = fakeTickets.map(t => t.id);
+  if (fakeIds.length > 0) {
+    await prisma.ticketSatisfaction.deleteMany({ where: { ticketId: { in: fakeIds } } });
+    await prisma.ticketHistory.deleteMany({ where: { ticketId: { in: fakeIds } } });
+    await prisma.ticketAttachment.deleteMany({ where: { ticketId: { in: fakeIds } } });
+    await prisma.ticketComment.deleteMany({ where: { ticketId: { in: fakeIds } } });
+    await prisma.workflowExecution.deleteMany({ where: { ticketId: { in: fakeIds } } });
+    await prisma.approvalHistory.deleteMany({ where: { request: { ticketId: { in: fakeIds } } } });
+    await prisma.approvalRequest.deleteMany({ where: { ticketId: { in: fakeIds } } });
+    await prisma.ticket.deleteMany({ where: { id: { in: fakeIds } } });
+    console.log(`  ${fakeIds.length} tickets removidos`);
+  }
+
   console.log('Buscando dados existentes...');
 
   const companies = await prisma.company.findMany();
@@ -209,22 +228,11 @@ async function main() {
   console.log(`  Categorias: ${categories.length}`);
   console.log(`  SLAs: ${slas.length}`);
 
-  // Get the highest protocol counter
-  const lastTicket = await prisma.ticket.findFirst({
-    orderBy: { createdAt: 'desc' },
-    select: { protocol: true },
-  });
+  // Count remaining existing tickets (from original seed) to determine protocol counter
+  const existingCount = await prisma.ticket.count();
+  const baseCounter = existingCount;
 
-  let baseCounter = 0;
-  if (lastTicket) {
-    // Extract numeric part from TK-XXXX format
-    const match = lastTicket.protocol.match(/TK-([A-Z0-9]+)/);
-    if (match) {
-      baseCounter = parseInt(match[1], 36) - 1000 + 1;
-    }
-  }
-
-  console.log(`  Último protocolo: ${lastTicket?.protocol ?? 'nenhum'}, base counter: ${baseCounter}`);
+  console.log(`  Tickets do seed original: ${existingCount}, base counter: ${baseCounter}`);
 
   // ── Generate Tickets ─────────────────────────────────
 

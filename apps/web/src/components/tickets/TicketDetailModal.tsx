@@ -195,6 +195,18 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
                       <dt className="text-base-content/50 text-xs">Atribuído</dt>
                       <dd className="text-xs">{ticket.assignee?.name || '-'}</dd>
                     </div>
+                    <div className="flex justify-between">
+                      <dt className="text-base-content/50 text-xs">Cliente</dt>
+                      <dd className="text-xs">{ticket.client?.name || '-'}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-base-content/50 text-xs">A pedido de</dt>
+                      <dd className="text-xs">{ticket.onBehalfOf?.name || '-'}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-base-content/50 text-xs">Departamento</dt>
+                      <dd className="text-xs">{ticket.department?.name || '-'}</dd>
+                    </div>
                   </dl>
                 </section>
               </div>

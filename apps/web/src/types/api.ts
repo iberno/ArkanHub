@@ -8,6 +8,45 @@ export interface User {
   roles?: { role: Pick<Role, 'id' | 'name'> }[];
 }
 
+export interface Company {
+  id: string;
+  name: string;
+  document?: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  departments?: Department[];
+  _count?: { departments: number; clients: number; users: number };
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  companyId: string;
+  managerId?: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  company?: Pick<Company, 'id' | 'name'>;
+  manager?: Pick<User, 'id' | 'name' | 'email'>;
+  _count?: { users: number; clients: number; tickets: number };
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  companyId: string;
+  departmentId?: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  company?: Pick<Company, 'id' | 'name'>;
+  department?: Pick<Department, 'id' | 'name'>;
+  _count?: { tickets: number };
+}
+
 export interface Ticket {
   id: string;
   protocol: string;
@@ -15,6 +54,9 @@ export interface Ticket {
   description: string;
   requesterId: string;
   assignedTo?: string;
+  clientId?: string;
+  onBehalfOfId?: string;
+  departmentId?: string;
   statusId: string;
   priorityId: string;
   categoryId?: string;
@@ -29,6 +71,9 @@ export interface Ticket {
   category?: TicketCategory;
   requester?: Pick<User, 'id' | 'name' | 'email'>;
   assignee?: Pick<User, 'id' | 'name' | 'email'>;
+  client?: Pick<Client, 'id' | 'name' | 'email'>;
+  onBehalfOf?: Pick<Client, 'id' | 'name' | 'email'>;
+  department?: Pick<Department, 'id' | 'name'>;
   comments?: TicketComment[];
 }
 

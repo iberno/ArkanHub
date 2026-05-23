@@ -9,6 +9,9 @@ import { Knowledge } from '../pages/Knowledge';
 import { Workflows } from '../pages/Workflows';
 import { Problems } from '../pages/Problems';
 import { Changes } from '../pages/Changes';
+import { Companies } from '../pages/Companies';
+import { Departments } from '../pages/Departments';
+import { Clients } from '../pages/Clients';
 import { Reports } from '../pages/Reports';
 import { Notifications } from '../pages/Notifications';
 import { Login } from '../pages/Login';
@@ -33,6 +36,9 @@ export function AppRoutes() {
       <Route path="/workflows" element={<ProtectedRoute><Workflows /></ProtectedRoute>} />
       <Route path="/problems" element={<ProtectedRoute><Problems /></ProtectedRoute>} />
       <Route path="/changes" element={<ProtectedRoute><Changes /></ProtectedRoute>} />
+      <Route path="/companies" element={<ProtectedRoute><Companies /></ProtectedRoute>} />
+      <Route path="/departments" element={<ProtectedRoute><Departments /></ProtectedRoute>} />
+      <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
     </Routes>

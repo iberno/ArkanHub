@@ -14,6 +14,21 @@ export class CreateTicketDto {
   @IsUUID()
   requesterId: string;
 
+  @ApiProperty({ required: false })
+  @IsUUID()
+  @IsOptional()
+  clientId?: string;
+
+  @ApiProperty({ required: false })
+  @IsUUID()
+  @IsOptional()
+  onBehalfOfId?: string;
+
+  @ApiProperty({ required: false })
+  @IsUUID()
+  @IsOptional()
+  departmentId?: string;
+
   @ApiProperty()
   @IsUUID()
   statusId: string;

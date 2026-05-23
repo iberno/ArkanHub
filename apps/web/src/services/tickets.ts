@@ -12,7 +12,10 @@ export const ticketsService = {
     return data;
   },
 
-  async create(body: { title: string; description: string; requesterId: string; statusId: string; priorityId: string; categoryId?: string }) {
+  async create(body: {
+    title: string; description: string; requesterId: string; statusId: string; priorityId: string;
+    categoryId?: string; clientId?: string; onBehalfOfId?: string; departmentId?: string;
+  }) {
     const { data } = await api.post<Ticket>('/tickets', body);
     return data;
   },

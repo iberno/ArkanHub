@@ -82,6 +82,7 @@ export function Tickets() {
                 <th>Protocolo</th>
                 <th>Título</th>
                 <th className="hidden md:table-cell">Solicitante</th>
+                <th className="hidden 2xl:table-cell">Cliente</th>
                 <th>Status</th>
                 <th>Prioridade</th>
                 <th className="hidden lg:table-cell">Abertura</th>
@@ -104,6 +105,7 @@ export function Tickets() {
                       <span className="truncate block">{ticket.title}</span>
                     </td>
                     <td className="hidden md:table-cell text-sm">{ticket.requester?.name}</td>
+                    <td className="hidden 2xl:table-cell text-sm text-base-content/60">{ticket.client?.name || '-'}</td>
                     <td>
                       <span
                         className="badge badge-sm"

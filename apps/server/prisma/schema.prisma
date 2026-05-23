@@ -34,6 +34,7 @@ model User {
   changesRequested  Change[]        @relation("change_requester")
   changesAssigned   Change[]        @relation("change_assignee")
   changeApprovals   ChangeApproval[]
+  managedDepartments Department[] @relation("department_manager")
 
   @@map("users")
 }
@@ -83,25 +84,56 @@ model RolePermission {
   @@map("role_permissions")
 }
 
+model Company {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  document  String?  @unique @db.VarChar(50)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users       User[]
+  departments Department[]
+  clients     Client[]
+
+  @@map("companies")
+}
+
 model Department {
   id        String   @id @default(uuid()) @db.Uuid
   name      String   @db.VarChar(255)
+  companyId String   @map("company_id") @db.Uuid
+  managerId String?  @map("manager_id") @db.Uuid
+  active    Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  users User[]
+  company Company  @relation(fields: [companyId], references: [id])
+  manager User?    @relation("department_manager", fields: [managerId], references: [id])
+  users   User[]
+  clients Client[]
+  tickets Ticket[]
 
   @@map("departments")
 }
 
-model Company {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @db.VarChar(255)
-  document  String?  @db.VarChar(50)
-  createdAt DateTime @default(now()) @map("created_at")
+model Client {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(255)
+  email        String?  @db.VarChar(255)
+  phone        String?  @db.VarChar(50)
+  companyId    String   @map("company_id") @db.Uuid
+  departmentId String?  @map("department_id") @db.Uuid
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  users User[]
+  company    Company  @relation(fields: [companyId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+  tickets    Ticket[] @relation("ticket_client")
+  ticketsOnBehalf Ticket[] @relation("ticket_on_behalf_of")
 
-  @@map("companies")
+  @@map("clients")
 }
 
 model Ticket {
@@ -111,6 +143,9 @@ model Ticket {
   description  String    @db.Text
   requesterId  String    @map("requester_id") @db.Uuid
   assignedTo   String?   @map("assigned_to") @db.Uuid
+  clientId     String?   @map("client_id") @db.Uuid
+  onBehalfOfId String?   @map("on_behalf_of_id") @db.Uuid
+  departmentId String?   @map("department_id") @db.Uuid
   statusId     String    @map("status_id") @db.Uuid
   priorityId   String    @map("priority_id") @db.Uuid
   categoryId   String?   @map("category_id") @db.Uuid
@@ -124,6 +159,9 @@ model Ticket {
 
   requester   User              @relation("requester", fields: [requesterId], references: [id])
   assignee    User?             @relation("assigned", fields: [assignedTo], references: [id])
+  client      Client?           @relation("ticket_client", fields: [clientId], references: [id])
+  onBehalfOf  Client?           @relation("ticket_on_behalf_of", fields: [onBehalfOfId], references: [id])
+  department  Department?       @relation(fields: [departmentId], references: [id])
   status      TicketStatus      @relation(fields: [statusId], references: [id])
   priority    TicketPriority    @relation(fields: [priorityId], references: [id])
   category    TicketCategory?   @relation(fields: [categoryId], references: [id])

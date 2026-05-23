@@ -169,10 +169,12 @@ async function main() {
   ];
   const deptIds: Record<string, string> = {};
   for (const d of deptDefs) {
-    const created = await prisma.department.create({
-      data: { name: d.name, companyId: compIds[d.company] },
+    const created = await prisma.department.upsert({
+      where: { name_companyId: { name: d.name, companyId: compIds[d.company] } },
+      update: { name: d.name },
+      create: { name: d.name, companyId: compIds[d.company] },
     });
-    deptIds[d.name] = created.id;
+    deptIds[d.name + '|' + d.company] = created.id;
   }
 
   // ── 5. USERS ──────────────────────────────────────────────────
@@ -226,7 +228,7 @@ async function main() {
       create: {
         name: u.name, email: u.email, passwordHash: hash, active: true,
         companyId: compIds[u.company],
-        departmentId: deptIds[u.dept],
+        departmentId: deptIds[u.dept + '|' + u.company],
       },
     });
     userIds[u.email] = created.id;
@@ -240,10 +242,10 @@ async function main() {
   // Set department managers
   const managerMap: Record<string, string> = {};
   for (const u of userDefs) {
-    if (u.isManager) managerMap[u.dept] = userIds[u.email];
+    if (u.isManager) managerMap[u.dept + '|' + u.company] = userIds[u.email];
   }
-  for (const [deptName, managerId] of Object.entries(managerMap)) {
-    await prisma.department.update({ where: { id: deptIds[deptName] }, data: { managerId } });
+  for (const [deptKey, managerId] of Object.entries(managerMap)) {
+    await prisma.department.update({ where: { id: deptIds[deptKey] }, data: { managerId } });
   }
 
   // ── 6. CLIENTS ────────────────────────────────────────────────
@@ -278,7 +280,7 @@ async function main() {
       client = await prisma.client.create({
         data: {
           name: c.name, email: c.email, phone: c.phone,
-          companyId: compIds[c.company], departmentId: deptIds[c.dept],
+          companyId: compIds[c.company], departmentId: deptIds[c.dept + '|' + c.company],
         },
       });
     }
@@ -748,7 +750,7 @@ async function main() {
         assignedTo: t.assignee ? userIds[t.assignee] : null,
         clientId: clientIds[t.client],
         onBehalfOfId: t.onBehalfOf ? clientIds[t.onBehalfOf] : null,
-        departmentId: deptIds[t.dept],
+        departmentId: deptIds[t.dept + '|' + t.company],
         statusId: statusByName[t.status] ?? statusAberto,
         priorityId: priorityByName[t.priority],
         categoryId: catIds[t.category],

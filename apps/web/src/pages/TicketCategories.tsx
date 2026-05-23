@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Tags, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Tags, Plus, Trash2 } from 'lucide-react';
 import { ticketCategoriesService } from '../services/ticket-categories';
 import type { TicketCategory } from '../types/api';
 
@@ -125,17 +125,14 @@ export function TicketCategories() {
               return (
                 <div key={cat.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-4">
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="flex-1 cursor-pointer" onDoubleClick={() => openEdit(cat)}>
                       <span className="font-medium">{cat.name}</span>
                       <span className="text-xs text-base-content/40 ml-2">
-                        {(cat as any)._count?.tickets ?? 0} tickets
+                        {cat._count?.tickets ?? 0} tickets
                       </span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button className="btn btn-ghost btn-xs" onClick={() => openEdit(cat)}>
-                        <Pencil size={14} />
-                      </button>
-                      <button className="btn btn-ghost btn-xs text-error" onClick={() => { if (confirm(`Remover "${cat.name}"?`)) deleteMutation.mutate(cat.id); }}>
+                      <button className="btn btn-ghost btn-xs text-error" onClick={(e) => { e.stopPropagation(); if (confirm(`Remover "${cat.name}"?`)) deleteMutation.mutate(cat.id); }}>
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -143,18 +140,15 @@ export function TicketCategories() {
                   {children.length > 0 && (
                     <div className="ml-6 mt-3 space-y-2">
                       {children.map((child) => (
-                        <div key={child.id} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-base-200">
-                          <div>
+                        <div key={child.id} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-base-200 cursor-pointer" onDoubleClick={() => openEdit(child)}>
+                          <div className="flex-1">
                             <span className="text-sm">{child.name}</span>
                             <span className="text-xs text-base-content/40 ml-2">
-                              {(child as any)._count?.tickets ?? 0} tickets
+                              {child._count?.tickets ?? 0} tickets
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <button className="btn btn-ghost btn-xs" onClick={() => openEdit(child)}>
-                              <Pencil size={12} />
-                            </button>
-                            <button className="btn btn-ghost btn-xs text-error" onClick={() => { if (confirm(`Remover "${child.name}"?`)) deleteMutation.mutate(child.id); }}>
+                            <button className="btn btn-ghost btn-xs text-error" onClick={(e) => { e.stopPropagation(); if (confirm(`Remover "${child.name}"?`)) deleteMutation.mutate(child.id); }}>
                               <Trash2 size={12} />
                             </button>
                           </div>

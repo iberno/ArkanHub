@@ -100,6 +100,7 @@ export interface TicketCategory {
   id: string;
   name: string;
   parentId?: string;
+  _count?: { tickets: number; children: number };
 }
 
 export interface TicketComment {

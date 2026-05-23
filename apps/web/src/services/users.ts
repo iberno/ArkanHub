@@ -21,4 +21,10 @@ export const usersService = {
     const { data } = await api.delete<{ message: string }>(`/users/${id}`);
     return data;
   },
+
+  assignRole: (userId: string, roleId: string) =>
+    api.post(`/users/${userId}/roles/${roleId}`),
+
+  removeRole: (userId: string, roleId: string) =>
+    api.delete(`/users/${userId}/roles/${roleId}`),
 };

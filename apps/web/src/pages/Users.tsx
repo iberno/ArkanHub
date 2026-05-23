@@ -1,13 +1,14 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Shield, Users as UsersIcon, Pencil, Trash2, UserPlus,
+  Shield, Users as UsersIcon, Pencil, Trash2, UserPlus, UserCog,
 } from 'lucide-react';
 import { rolesService } from '../services/roles';
 import { permissionsService } from '../services/permissions';
 import { usersService } from '../services/users';
 import { RoleFormModal } from '../components/roles/RoleFormModal';
 import { UserCreateModal } from '../components/users/UserCreateModal';
+import { UserRoleModal } from '../components/roles/UserRoleModal';
 import type { Role } from '../types/api';
 
 const AVATAR_COLORS = [
@@ -31,7 +32,9 @@ export function Users() {
   const createRoleRef = useRef<HTMLDialogElement | null>(null);
   const editRoleRef = useRef<HTMLDialogElement | null>(null);
   const createUserRef = useRef<HTMLDialogElement | null>(null);
+  const userRoleRef = useRef<HTMLDialogElement | null>(null);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [managingRole, setManagingRole] = useState<Role | null>(null);
   const queryClient = useQueryClient();
 
   const { data: roles, isLoading: rolesLoading } = useQuery({
@@ -75,6 +78,11 @@ export function Users() {
           role={editingRole ?? undefined}
         />
         <UserCreateModal modalRef={createUserRef} />
+        <UserRoleModal
+          modalRef={userRoleRef}
+          role={managingRole ?? ({} as Role)}
+          users={users ?? []}
+        />
 
         {rolesLoading ? (
           <div className="flex justify-center py-12">
@@ -126,9 +134,18 @@ export function Users() {
                   </div>
 
                   <div className="border-t border-base-200 pt-3">
-                    <div className="flex items-center gap-1.5 mb-2 text-xs text-base-content/60">
-                      <UsersIcon size={14} />
-                      <span>{members.length} {members.length === 1 ? 'usuário' : 'usuários'}</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5 text-xs text-base-content/60">
+                        <UsersIcon size={14} />
+                        <span>{members.length} {members.length === 1 ? 'usuário' : 'usuários'}</span>
+                      </div>
+                      <button
+                        className="btn btn-ghost btn-xs gap-1"
+                        onClick={() => { setManagingRole(role); userRoleRef.current?.showModal(); }}
+                      >
+                        <UserCog size={12} />
+                        Gerenciar
+                      </button>
                     </div>
 
                     {members.length > 0 ? (

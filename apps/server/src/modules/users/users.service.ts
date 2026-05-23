@@ -15,7 +15,31 @@ export class UsersService {
   async findAll() {
     return this.prisma.user.findMany({
       where: { active: true },
-      select: { id: true, name: true, email: true, active: true, createdAt: true },
+      select: {
+        id: true, name: true, email: true, active: true, createdAt: true,
+        roles: { include: { role: { select: { id: true, name: true } } } },
+      },
+    });
+  }
+
+  async assignRole(userId: string, roleId: string) {
+    const [user, role] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: userId } }),
+      this.prisma.role.findUnique({ where: { id: roleId } }),
+    ]);
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+    if (!role) throw new NotFoundException('Papel não encontrado');
+
+    return this.prisma.userRole.upsert({
+      where: { userId_roleId: { userId, roleId } },
+      update: {},
+      create: { userId, roleId },
+    });
+  }
+
+  async removeRole(userId: string, roleId: string) {
+    return this.prisma.userRole.delete({
+      where: { userId_roleId: { userId, roleId } },
     });
   }
 

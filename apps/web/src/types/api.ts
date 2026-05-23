@@ -5,6 +5,7 @@ export interface User {
   active: boolean;
   createdAt: string;
   updatedAt?: string;
+  roles?: { role: Pick<Role, 'id' | 'name'> }[];
 }
 
 export interface Ticket {

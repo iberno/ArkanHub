@@ -44,4 +44,22 @@ export class UsersController {
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
+
+  @Post(':userId/roles/:roleId')
+  @ApiOperation({ summary: 'Vincular papel ao usuário' })
+  async assignRole(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Param('roleId', ParseUUIDPipe) roleId: string,
+  ) {
+    return this.usersService.assignRole(userId, roleId);
+  }
+
+  @Delete(':userId/roles/:roleId')
+  @ApiOperation({ summary: 'Remover papel do usuário' })
+  async removeRole(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Param('roleId', ParseUUIDPipe) roleId: string,
+  ) {
+    return this.usersService.removeRole(userId, roleId);
+  }
 }

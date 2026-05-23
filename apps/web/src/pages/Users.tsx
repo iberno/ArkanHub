@@ -1,10 +1,13 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Shield, Users as UsersIcon, Plus, Pencil, Trash2 } from 'lucide-react';
+import {
+  Shield, Users as UsersIcon, Pencil, Trash2, UserPlus,
+} from 'lucide-react';
 import { rolesService } from '../services/roles';
 import { permissionsService } from '../services/permissions';
 import { usersService } from '../services/users';
 import { RoleFormModal } from '../components/roles/RoleFormModal';
+import { UserCreateModal } from '../components/users/UserCreateModal';
 import type { Role } from '../types/api';
 
 const AVATAR_COLORS = [
@@ -25,8 +28,9 @@ function Avatar({ name }: { name: string }) {
 }
 
 export function Users() {
-  const createRef = useRef<HTMLDialogElement | null>(null);
-  const editRef = useRef<HTMLDialogElement | null>(null);
+  const createRoleRef = useRef<HTMLDialogElement | null>(null);
+  const editRoleRef = useRef<HTMLDialogElement | null>(null);
+  const createUserRef = useRef<HTMLDialogElement | null>(null);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const queryClient = useQueryClient();
 
@@ -58,30 +62,35 @@ export function Users() {
             <Shield size={24} className="text-primary" />
             <h1 className="text-3xl font-bold">Usuários</h1>
           </div>
-          <button className="btn btn-primary" onClick={() => createRef.current?.showModal()}>
-            <Plus size={18} />
-            Novo Papel
+          <button className="btn btn-primary" onClick={() => createUserRef.current?.showModal()}>
+            <UserPlus size={18} />
+            Novo Usuário
           </button>
         </div>
 
-        <RoleFormModal modalRef={createRef} permissions={permissions ?? []} />
+        <RoleFormModal modalRef={createRoleRef} permissions={permissions ?? []} />
         <RoleFormModal
-          modalRef={editRef}
+          modalRef={editRoleRef}
           permissions={permissions ?? []}
           role={editingRole ?? undefined}
         />
+        <UserCreateModal modalRef={createUserRef} />
 
         {rolesLoading ? (
           <div className="flex justify-center py-12">
             <span className="loading loading-spinner loading-lg" />
           </div>
-        ) : !roles || roles.length === 0 ? (
-          <div className="text-center text-base-content/50 py-12 bg-base-100 rounded-box border border-base-200">
-            Nenhum papel encontrado
-          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {roles.map((role) => {
+            <button
+              className="bg-base-100 rounded-box shadow-sm border-2 border-dashed border-base-300 p-5 flex flex-col items-center justify-center gap-3 min-h-[200px] hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer"
+              onClick={() => createRoleRef.current?.showModal()}
+            >
+              <img src="/svg/role.svg" alt="Criar papel" className="w-12 h-12 opacity-40" />
+              <span className="text-sm font-medium text-base-content/50">Criar Papel</span>
+            </button>
+
+            {roles && roles.length > 0 ? roles.map((role) => {
               const members = role.users ?? [];
               const visible = members.slice(0, 10);
               const remaining = members.length - visible.length;
@@ -103,7 +112,7 @@ export function Users() {
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         className="btn btn-ghost btn-xs"
-                        onClick={() => { setEditingRole(role); editRef.current?.showModal(); }}
+                        onClick={() => { setEditingRole(role); editRoleRef.current?.showModal(); }}
                       >
                         <Pencil size={14} />
                       </button>
@@ -139,7 +148,11 @@ export function Users() {
                   </div>
                 </div>
               );
-            })}
+            }) : (
+              <div className="col-span-full text-center text-base-content/50 py-12 bg-base-100 rounded-box border border-base-200">
+                Nenhum papel encontrado
+              </div>
+            )}
           </div>
         )}
       </section>

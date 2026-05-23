@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Ticket, Users, Building2, Building, UserPlus, Tags,
   Clock, ClipboardList, BookOpen, Workflow, BarChart3,
-  AlertTriangle, GitPullRequest, Bell, UserCircle,
+  AlertTriangle, GitPullRequest,
 } from 'lucide-react';
 import type { FC } from 'react';
 
@@ -54,13 +54,6 @@ export const navCategories: NavCategory[] = [
     title: 'Relatórios',
     items: [
       { label: 'BI & Relatórios', path: '/reports', icon: BarChart3, requiredPermission: 'report.view' },
-    ],
-  },
-  {
-    title: 'Pessoal',
-    items: [
-      { label: 'Notificações', path: '/notifications', icon: Bell },
-      { label: 'Perfil', path: '/profile', icon: UserCircle },
     ],
   },
 ];

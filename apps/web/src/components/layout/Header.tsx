@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { Menu, Moon, Sun, ChevronDown, LogOut, Bell, BellRing } from 'lucide-react';
+import { Menu, Moon, Sun, ChevronDown, LogOut, Bell, BellRing, UserCircle } from 'lucide-react';
 import { useThemeStore } from '../../store/theme';
 import { useAuthStore } from '../../store/auth';
 import { notificationsService } from '../../services/notifications';
@@ -110,6 +110,19 @@ export function Header() {
               <ChevronDown size={14} className="opacity-50" />
             </div>
             <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-lg border border-base-200">
+              <li>
+                <Link to="/profile" className="gap-2" onClick={() => { (document.activeElement as HTMLElement)?.blur(); }}>
+                  <UserCircle size={16} />
+                  Perfil
+                </Link>
+              </li>
+              <li>
+                <Link to="/notifications" className="gap-2" onClick={() => { (document.activeElement as HTMLElement)?.blur(); }}>
+                  <Bell size={16} />
+                  Notificações
+                </Link>
+              </li>
+              <li><hr className="my-1" /></li>
               <li>
                 <button onClick={handleLogout} className="text-error gap-2">
                   <LogOut size={16} />

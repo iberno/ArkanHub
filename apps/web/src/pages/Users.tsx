@@ -98,11 +98,11 @@ export function Users() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             <button
-              className="bg-base-100 rounded-box shadow-sm border-2 border-dashed border-base-300 p-5 flex flex-col items-center justify-center gap-3 min-h-[200px] hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer"
+              className="bg-base-100 rounded-box shadow-sm border-2 border-dashed border-base-300 px-5 py-4 flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer self-start"
               onClick={() => createRoleRef.current?.showModal()}
             >
-              <img src="/svg/role.svg" alt="Criar papel" className="w-12 h-12 opacity-40" />
-              <span className="text-sm font-medium text-base-content/50">Criar Papel</span>
+              <img src="/svg/role.svg" alt="Criar papel" className="w-8 h-8 opacity-40" />
+              <span className="text-xs font-medium text-base-content/50">Criar Papel</span>
             </button>
 
             {roles && roles.length > 0 ? roles.map((role) => {

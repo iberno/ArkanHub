@@ -43,9 +43,47 @@ async function main() {
   ];
   const catIds: Record<string, string> = {};
   for (const c of categorySeed) {
-    let cat = await prisma.ticketCategory.findFirst({ where: { name: c.name } });
-    if (!cat) cat = await prisma.ticketCategory.create({ data: c });
+    let cat = await prisma.category.findFirst({ where: { name: c.name } });
+    if (!cat) cat = await prisma.category.create({ data: c });
     catIds[c.name] = cat.id;
+  }
+
+  // ── 1b. SUBCATEGORIES ───────────────────────────────────────────
+  const subcategorySeed: { name: string; parent: string }[] = [
+    { name: 'ERP', parent: 'Sistemas' },
+    { name: 'CRM', parent: 'Sistemas' },
+    { name: 'Portal', parent: 'Sistemas' },
+    { name: 'Servidores', parent: 'Infraestrutura' },
+    { name: 'Rede', parent: 'Infraestrutura' },
+    { name: 'Backup', parent: 'Infraestrutura' },
+    { name: 'VPN', parent: 'Acessos' },
+    { name: 'E-mail', parent: 'Acessos' },
+    { name: 'Sistema', parent: 'Acessos' },
+    { name: 'Internos', parent: 'Projetos' },
+    { name: 'Clientes', parent: 'Projetos' },
+    { name: 'Antivírus', parent: 'Segurança' },
+    { name: 'Firewall', parent: 'Segurança' },
+    { name: 'Auditoria', parent: 'Segurança' },
+    { name: 'Switches', parent: 'Redes' },
+    { name: 'Roteadores', parent: 'Redes' },
+    { name: 'Fibra', parent: 'Redes' },
+    { name: 'Notebooks', parent: 'Hardware' },
+    { name: 'Desktops', parent: 'Hardware' },
+    { name: 'Periféricos', parent: 'Hardware' },
+    { name: 'Licenciamento', parent: 'Software' },
+    { name: 'Atualização', parent: 'Software' },
+    { name: 'Instalação', parent: 'Software' },
+    { name: 'Impressoras', parent: 'Impressão' },
+    { name: 'Multifuncionais', parent: 'Impressão' },
+    { name: 'VoIP', parent: 'Telefonia' },
+    { name: 'Ramais', parent: 'Telefonia' },
+    { name: 'Mobile', parent: 'Telefonia' },
+  ];
+  for (const sc of subcategorySeed) {
+    const exists = await prisma.category.findFirst({ where: { name: sc.name, parentId: catIds[sc.parent] } });
+    if (!exists) {
+      await prisma.category.create({ data: { name: sc.name, parentId: catIds[sc.parent] } });
+    }
   }
 
   // ── 2. ROLES & PERMISSIONS ─────────────────────────────────────
@@ -782,7 +820,7 @@ async function main() {
   } catch { /* ignore */ }
 
   // ── NOTIFICATIONS ────────────────────────────────────────────
-  const notifyUsers = ['carlos@arkanhub.com', 'marcos@arkanhub.com', 'felipe@datacloud.com', 'ricardo@novatech.com'];
+  const notifyUsers = ['admin@arkanhub.com','carlos@arkanhub.com', 'marcos@arkanhub.com', 'felipe@datacloud.com', 'ricardo@novatech.com'];
   for (const email of notifyUsers) {
     await prisma.notification.create({
       data: {

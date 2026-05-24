@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/auth';
 import { getDefaultRoute } from '../config/navigation';
 import { Dashboard } from '../pages/Dashboard';
 import { Tickets } from '../pages/Tickets';
+import { ClosedTickets } from '../pages/ClosedTickets';
 import { Users } from '../pages/Users';
 import { Slas } from '../pages/Slas';
 import { Approvals } from '../pages/Approvals';
@@ -15,9 +16,10 @@ import { Departments } from '../pages/Departments';
 import { Clients } from '../pages/Clients';
 import { Reports } from '../pages/Reports';
 import { Notifications } from '../pages/Notifications';
-import { TicketCategories } from '../pages/TicketCategories';
+import { Categories } from '../pages/Categories';
 import { Profile } from '../pages/Profile';
 import { Login } from '../pages/Login';
+import { Assets } from '../pages/Assets';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -39,6 +41,7 @@ export function AppRoutes() {
       <Route path="/" element={<ProtectedRoute><HomeRedirect /></ProtectedRoute>} />
       <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
       <Route path="/tickets/new" element={<Navigate to="/tickets" replace />} />
+      <Route path="/tickets/closed" element={<ProtectedRoute><ClosedTickets /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/slas" element={<ProtectedRoute><Slas /></ProtectedRoute>} />
       <Route path="/approvals" element={<ProtectedRoute><Approvals /></ProtectedRoute>} />
@@ -51,8 +54,9 @@ export function AppRoutes() {
       <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-      <Route path="/ticket-categories" element={<ProtectedRoute><TicketCategories /></ProtectedRoute>} />
+      <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
     </Routes>
   );
 }

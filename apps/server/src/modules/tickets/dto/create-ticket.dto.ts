@@ -46,4 +46,9 @@ export class CreateTicketDto {
   @IsUUID()
   @IsOptional()
   categoryId?: string;
+
+  @ApiProperty({ required: false })
+  @IsString({ each: true })
+  @IsOptional()
+  assetIds?: string[];
 }

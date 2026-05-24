@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Ticket, Users, Building2, Building, UserPlus, Tags,
   Clock, ClipboardList, BookOpen, Workflow, BarChart3,
-  AlertTriangle, GitPullRequest,
+  AlertTriangle, GitPullRequest, Monitor, Archive,
 } from 'lucide-react';
 import type { FC } from 'react';
 
@@ -27,8 +27,20 @@ export const navCategories: NavCategory[] = [
     title: 'Atendimento',
     items: [
       { label: 'Tickets', path: '/tickets', icon: Ticket, requiredPermission: 'ticket.create' },
+      { label: 'Tickets Fechados', path: '/tickets/closed', icon: Archive, requiredPermission: 'ticket.create' },
       { label: 'Clientes', path: '/clients', icon: UserPlus, requiredPermission: 'ticket.create' },
-      { label: 'Categorias', path: '/ticket-categories', icon: Tags },
+    ],
+  },
+  {
+    title: 'Ativos',
+    items: [
+      { label: 'Ativos', path: '/assets', icon: Monitor, requiredPermission: 'ticket.create' },
+    ],
+  },
+  {
+    title: 'Cadastros',
+    items: [
+      { label: 'Categorias', path: '/categories', icon: Tags },
     ],
   },
   {

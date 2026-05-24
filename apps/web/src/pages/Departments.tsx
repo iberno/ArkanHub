@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building, Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Building, Plus, Trash2, Search } from 'lucide-react';
 import { departmentsService } from '../services/departments';
 import { companiesService } from '../services/companies';
 import { usersService } from '../services/users';
@@ -88,7 +88,7 @@ export function Departments() {
       {isLoading ? <div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg" /></div> :
         <div className="overflow-x-auto"><table className="table table-zebra">
           <thead><tr><th>Nome</th><th>Empresa</th><th>Gestor</th><th>Usuários</th><th>Clientes</th><th>Tickets</th><th>Ativo</th><th></th></tr></thead>
-          <tbody>{filtered.map(d => <tr key={d.id}>
+          <tbody>{filtered.map(d => <tr key={d.id} className="hover cursor-pointer" onDoubleClick={() => openEdit(d)}>
             <td className="font-medium">{d.name}</td>
             <td className="text-sm">{d.company?.name ?? '-'}</td>
             <td className="text-sm">{d.manager?.name ?? '-'}</td>
@@ -96,8 +96,9 @@ export function Departments() {
             <td>{d._count?.clients ?? 0}</td>
             <td>{d._count?.tickets ?? 0}</td>
             <td>{d.active ? <span className="badge badge-success badge-xs">Sim</span> : <span className="badge badge-ghost badge-xs">Não</span>}</td>
-            <td><div className="flex gap-1"><button className="btn btn-ghost btn-xs" onClick={() => openEdit(d)}><Pencil size={14} /></button>
-              <button className="btn btn-ghost btn-xs text-error" onClick={() => { if (confirm(`Remover "${d.name}"?`)) deleteM.mutate(d.id); }}><Trash2 size={14} /></button></div></td>
+            <td>
+              <button className="btn btn-ghost btn-xs text-error" onClick={() => { if (confirm(`Remover "${d.name}"?`)) deleteM.mutate(d.id); }}><Trash2 size={14} /></button>
+            </td>
           </tr>)}</tbody>
         </table></div>}
     </div>

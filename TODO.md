@@ -181,10 +181,10 @@
 
 ## Fase 4 — IA & Automação
 
-- [ ] Classificação automática de tickets (NLP)
-- [ ] Chatbot
-- [ ] Predição de SLA
-- [ ] Recomendação de soluções (knowledge base)
+- [x] Classificação automática de tickets (NLP)
+- [x] Chatbot
+- [x] Predição de SLA
+- [x] Recomendação de soluções (knowledge base)
 
 ---
 
@@ -196,6 +196,22 @@
 - [ ] NGINX como reverse proxy
 - [ ] Sentry para monitoramento de erros
 - [ ] Prometheus + Grafana (futuro)
+
+---
+
+## Fase 4b — UI & Experiência
+
+- [x] **Componentes de formulário globais** — `FormInput`, `FormSelect`, `FormTextarea` em `src/components/ui/forms/`
+- [x] **Componente de Paginação** — `Pagination.tsx` reutilizável com botões anterior/próximo, elipse, página ativa
+- [x] **Modal Novo Ticket em 3 colunas** — Layout responsivo `sm:grid-cols-3`
+- [x] **Categoria → Subcategoria cascata** — Seleciona raiz, mostra subcategorias se houver
+- [x] **Status padrão "Aberto" e prioridade "Média"** — Auto-preenchido via `useEffect`
+- [x] **Subcategorias no seed** — 28 subcategorias vinculadas às 10 raízes
+- [x] **Grid de Categorias responsivo** — `grid-cols-1` → `2xl:grid-cols-5`
+- [x] **Filtro multi-status** — Badges clicáveis na página de Tickets (Aberto, Em Andamento, etc.)
+- [x] **Filtro Tickets por modo** — Badges Todos / Meus tickets / Não atribuídos na mesma linha
+- [x] **Página Tickets Fechados** — Rota `/tickets/closed`, filtra por `statusName: 'Fechado,Resolvido'`
+- [x] **Filtro `statusName` no backend** — Controller + Service aceita `?statusName=Fechado,Resolvido`
 
 ---
 

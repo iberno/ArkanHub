@@ -12,35 +12,28 @@ export function Sidebar() {
     <div className="drawer-side z-50">
       <label htmlFor="sidebar-drawer" className="drawer-overlay" />
       <aside
-        className={`bg-base-100 min-h-screen border-r border-base-200 transition-all duration-200 ${
+        className={`relative bg-base-100 min-h-screen border-r border-base-200 transition-all duration-300 flex flex-col ${
           collapsed ? 'w-16' : 'w-56 xl:w-64'
         }`}
       >
-        <div className={`flex items-center border-b border-base-200 h-16 ${collapsed ? 'justify-center px-0' : 'gap-3 px-4'}`}>
+        <button
+          onClick={toggle}
+          className="absolute top-3 -right-3 z-50 btn btn-ghost btn-sm btn-square bg-base-100 border border-base-200 shadow-sm rounded-full"
+          aria-label={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+        >
+          {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+        </button>
+
+        <div className={`flex items-center border-b border-base-200 h-16 shrink-0 ${collapsed ? 'justify-center' : 'gap-3 px-4'}`}>
+          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-primary-content font-bold text-xs shrink-0">
+            A
+          </div>
           {!collapsed && (
-            <>
-              <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-primary-content font-bold text-xs shrink-0">
-                A
-              </div>
-              <span className="font-bold tracking-tight">ArkanHub</span>
-            </>
-          )}
-          {collapsed && (
-            <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-primary-content font-bold text-xs">
-              A
-            </div>
+            <span className="font-bold tracking-tight">ArkanHub</span>
           )}
         </div>
 
-        <button
-          onClick={toggle}
-          className={`btn btn-ghost btn-sm btn-square mt-2 ${collapsed ? 'mx-auto' : 'ml-2'}`}
-          aria-label={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
-        >
-          {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-        </button>
-
-        <div className={`menu mt-2 ${collapsed ? 'px-1' : 'p-2'} gap-1 max-h-[calc(100vh-8rem)] overflow-y-auto`}>
+        <div className="menu flex-1 overflow-y-auto gap-1">
           {navCategories.map((cat, ci) => {
             const visible = cat.items.filter(
               (item) => !item.requiredPermission || hasPermission(item.requiredPermission),
@@ -49,7 +42,7 @@ export function Sidebar() {
 
             return (
               <div key={ci}>
-                {cat.title && !collapsed && (
+                {!!cat.title && !collapsed && (
                   <div className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-base-content/30">
                     {cat.title}
                   </div>
@@ -60,8 +53,8 @@ export function Sidebar() {
                       <NavLink
                         to={item.path}
                         className={({ isActive }) =>
-                          `flex items-center gap-3 rounded-lg text-sm font-medium transition-colors ${
-                            collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'
+                          `flex items-center rounded-lg text-sm font-medium transition-colors ${
+                            collapsed ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'
                           } ${
                             isActive
                               ? 'bg-primary/10 text-primary'

@@ -228,7 +228,7 @@ export function Changes() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((c) => (
-            <div key={c.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5 flex flex-col">
+            <div key={c.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5 flex flex-col cursor-pointer" onDoubleClick={() => openEdit(c)}>
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <GitPullRequest size={20} className="text-primary" />
@@ -248,10 +248,9 @@ export function Changes() {
               <div className="flex items-center gap-3 mt-3 pt-3 border-t border-base-200 text-xs text-base-content/50">
                 <span className="flex items-center gap-1"><CheckCircle size={12} /> {c._count?.approvals ?? 0} aprovações</span>
                 {c.assignee && <span>{c.assignee.name}</span>}
-                <div className="ml-auto flex gap-1">
-                  <button className="btn btn-ghost btn-xs" onClick={() => openEdit(c)}>Editar</button>
+                <div className="ml-auto">
                   <button className="btn btn-ghost btn-xs text-error"
-                    onClick={() => { if (confirm(`Remover "${c.title}"?`)) deleteMutation.mutate(c.id); }}>
+                    onClick={(e) => { e.stopPropagation(); if (confirm(`Remover "${c.title}"?`)) deleteMutation.mutate(c.id); }}>
                     <Trash2 size={12} />
                   </button>
                 </div>

@@ -57,14 +57,6 @@ export function Header() {
           >
             <Menu size={18} />
           </label>
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-primary-content font-bold text-xs">
-              A
-            </div>
-            <span className="text-lg font-bold tracking-tight hidden sm:inline">
-              ArkanHub
-            </span>
-          </Link>
         </div>
 
         <div className="flex items-center gap-1">

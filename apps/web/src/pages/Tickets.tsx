@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Plus, ExternalLink } from 'lucide-react';
 import { ticketsService } from '../services/tickets';
 import { TicketCreateModal } from '../components/tickets/TicketCreateModal';
 import { TicketDetailModal } from '../components/tickets/TicketDetailModal';
 import { useAuthStore } from '../store/auth';
+import { Pagination } from '../components/ui';
 
 type FilterMode = 'all' | 'mine' | 'unassigned';
 
@@ -13,9 +14,13 @@ export function Tickets() {
   const createRef = useRef<HTMLDialogElement | null>(null);
   const detailRef = useRef<HTMLDialogElement | null>(null);
   const [detailTicketId, setDetailTicketId] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 15;
+
+  useEffect(() => { setPage(1); }, [statusFilter, search, filterMode]);
 
   const { data: tickets, isLoading } = useQuery({
     queryKey: ['tickets', filterMode],
@@ -26,13 +31,21 @@ export function Tickets() {
     },
   });
 
+  const statuses = [...new Set(tickets?.map((t) => t.status?.name).filter(Boolean))] as string[];
+
   const filtered = (tickets ?? []).filter((t) => {
-    if (statusFilter && t.status?.name !== statusFilter) return false;
+    if (statusFilter.size > 0 && t.status?.name && !statusFilter.has(t.status.name)) return false;
     if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !t.protocol.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const statuses = [...new Set(tickets?.map((t) => t.status?.name).filter(Boolean))];
+  const toggleStatus = (name: string) => {
+    const next = new Set(statusFilter);
+    if (next.has(name)) next.delete(name); else next.add(name);
+    setStatusFilter(next);
+  };
 
   const openDetail = (id: string) => {
     setDetailTicketId(id);
@@ -56,42 +69,45 @@ export function Tickets() {
         onClose={() => setDetailTicketId(null)}
       />
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <label className="input input-bordered flex items-center gap-2 flex-1">
+      <div className="mb-4">
+        <label className="input input-bordered flex items-center gap-2">
           <Search size={16} className="opacity-50" />
-          <input
-            type="text"
-            className="grow"
-            placeholder="Buscar por título ou protocolo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <input type="text" className="grow" placeholder="Buscar por título ou protocolo..."
+            value={search} onChange={(e) => setSearch(e.target.value)} />
         </label>
-        <select
-          className="select select-bordered w-full sm:w-40"
-          value={filterMode}
-          onChange={(e) => setFilterMode(e.target.value as FilterMode)}
-        >
-          <option value="all">Todos</option>
-          <option value="mine">Meus tickets</option>
-          <option value="unassigned">Não atribuídos</option>
-        </select>
-        <select
-          className="select select-bordered w-full sm:w-44"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">Todos os status</option>
-          {statuses.map((s) => (
-            <option key={s} value={s}>{s}</option>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <span className="text-sm font-medium text-base-content/60 mr-1">Status:</span>
+        {statuses.map((s) => (
+          <button key={s} onClick={() => toggleStatus(s)}
+            className={`badge badge-sm cursor-pointer transition-all hover:opacity-80 ${
+              statusFilter.has(s) ? 'badge-primary' : 'badge-ghost'
+            }`}>
+            {s}
+          </button>
+        ))}
+        {statusFilter.size > 0 && (
+          <button className="btn btn-ghost btn-xs text-base-content/40" onClick={() => setStatusFilter(new Set())}>
+            Limpar
+          </button>
+        )}
+
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-sm font-medium text-base-content/60 mr-1">Filtrar:</span>
+          {(['all', 'mine', 'unassigned'] as const).map((mode) => (
+            <button key={mode} onClick={() => setFilterMode(mode)}
+              className={`badge badge-sm cursor-pointer transition-all hover:opacity-80 ${
+                filterMode === mode ? 'badge-primary' : 'badge-ghost'
+              }`}>
+              {mode === 'all' ? 'Todos' : mode === 'mine' ? 'Meus tickets' : 'Não atribuídos'}
+            </button>
           ))}
-        </select>
+        </div>
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg" />
-        </div>
+        <div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg" /></div>
       ) : (
         <div className="overflow-x-auto bg-base-100 rounded-box shadow-sm border border-base-200">
           <table className="table">
@@ -111,12 +127,10 @@ export function Tickets() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center text-base-content/50 py-8">
-                    Nenhum ticket encontrado
-                  </td>
+                  <td colSpan={9} className="text-center text-base-content/50 py-8">Nenhum ticket encontrado</td>
                 </tr>
               ) : (
-                filtered.map((ticket) => (
+                paginated.map((ticket) => (
                   <tr key={ticket.id} className="hover cursor-pointer" onDoubleClick={() => openDetail(ticket.id)}>
                     <td className="font-mono text-xs">{ticket.protocol}</td>
                     <td className="max-w-[200px] lg:max-w-[300px] 2xl:max-w-[500px]">
@@ -125,10 +139,8 @@ export function Tickets() {
                     <td className="hidden md:table-cell text-sm">{ticket.requester?.name}</td>
                     <td className="hidden 2xl:table-cell text-sm text-base-content/60">{ticket.client?.name || '-'}</td>
                     <td>
-                      <span
-                        className="badge badge-sm"
-                        style={{ backgroundColor: ticket.status?.color ?? '#888', color: '#fff' }}
-                      >
+                      <span className="badge badge-sm"
+                        style={{ backgroundColor: ticket.status?.color ?? '#888', color: '#fff' }}>
                         {ticket.status?.name}
                       </span>
                     </td>
@@ -159,6 +171,7 @@ export function Tickets() {
           </table>
         </div>
       )}
+      <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 }

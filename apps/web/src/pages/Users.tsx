@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Shield, Users as UsersIcon, Pencil, Trash2, UserPlus, UserCog,
+  Shield, Users as UsersIcon, Trash2, UserPlus, UserCog,
 } from 'lucide-react';
 import { rolesService } from '../services/roles';
 import { permissionsService } from '../services/permissions';
@@ -121,7 +121,7 @@ export function Users() {
               const remaining = members.length - visible.length;
 
               return (
-                <div key={role.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5">
+                <div key={role.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5 cursor-pointer" onDoubleClick={() => { setEditingRole(role); editRoleRef.current?.showModal(); }}>
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -134,20 +134,12 @@ export function Users() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        className="btn btn-ghost btn-xs"
-                        onClick={() => { setEditingRole(role); editRoleRef.current?.showModal(); }}
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        className="btn btn-ghost btn-xs text-error"
-                        onClick={() => { if (confirm(`Remover papel "${role.name}"?`)) deleteRoleMutation.mutate(role.id); }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                    <button
+                      className="btn btn-ghost btn-xs text-error shrink-0"
+                      onClick={(e) => { e.stopPropagation(); if (confirm(`Remover papel "${role.name}"?`)) deleteRoleMutation.mutate(role.id); }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
 
                   <div className="border-t border-base-200 pt-3">

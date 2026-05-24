@@ -187,7 +187,7 @@ async function main() {
   const clients = await prisma.client.findMany();
   const statuses = await prisma.ticketStatus.findMany();
   const priorities = await prisma.ticketPriority.findMany();
-  const categories = await prisma.ticketCategory.findMany();
+  const categories = await prisma.category.findMany();
   const slas = await prisma.sla.findMany();
 
   // Build lookup maps

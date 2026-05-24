@@ -75,13 +75,14 @@ export interface Ticket {
   updatedAt: string;
   status?: TicketStatus;
   priority?: TicketPriority;
-  category?: TicketCategory;
+  category?: Category;
   requester?: Pick<User, 'id' | 'name' | 'email'>;
   assignee?: Pick<User, 'id' | 'name' | 'email'>;
   client?: Pick<Client, 'id' | 'name' | 'email'>;
   onBehalfOf?: Pick<Client, 'id' | 'name' | 'email'>;
   department?: Pick<Department, 'id' | 'name'>;
   comments?: TicketComment[];
+  ticketAssets?: { asset: Asset }[];
 }
 
 export interface TicketStatus {
@@ -96,11 +97,36 @@ export interface TicketPriority {
   level: number;
 }
 
-export interface TicketCategory {
+export interface Category {
   id: string;
   name: string;
   parentId?: string;
-  _count?: { tickets: number; children: number };
+  createdAt: string;
+  parent?: Pick<Category, 'id' | 'name'>;
+  _count?: { tickets: number; assets: number; children: number };
+}
+
+export interface Asset {
+  id: string;
+  tag: string;
+  name: string;
+  categoryId?: string;
+  brand?: string;
+  model?: string;
+  serialNumber?: string;
+  status: string;
+  purchaseDate?: string;
+  warrantyEnd?: string;
+  assignedTo?: string;
+  departmentId?: string;
+  companyId?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  category?: Pick<Category, 'id' | 'name'>;
+  assignee?: Pick<User, 'id' | 'name'>;
+  department?: Pick<Department, 'id' | 'name'>;
+  company?: Pick<Company, 'id' | 'name'>;
 }
 
 export interface TicketComment {

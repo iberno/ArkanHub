@@ -2,7 +2,7 @@ import { api } from './api';
 import type { Ticket, TicketComment, TicketAttachment } from '../types/api';
 
 export const ticketsService = {
-  async findAll(params?: { assignedTo?: string; unassigned?: boolean }) {
+  async findAll(params?: { assignedTo?: string; unassigned?: boolean; statusName?: string }) {
     const { data } = await api.get<Ticket[]>('/tickets', { params });
     return data;
   },
@@ -15,7 +15,7 @@ export const ticketsService = {
   async create(body: {
     title: string; description: string; requesterId: string; statusId: string; priorityId: string;
     categoryId?: string; clientId?: string; onBehalfOfId?: string; departmentId?: string;
-    assignedTo?: string;
+    assignedTo?: string; assetIds?: string[];
   }) {
     const { data } = await api.post<Ticket>('/tickets', body);
     return data;

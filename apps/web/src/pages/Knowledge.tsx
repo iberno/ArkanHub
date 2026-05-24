@@ -200,7 +200,7 @@ export function Knowledge() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {articles.map((a) => (
-            <div key={a.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5 flex flex-col">
+            <div key={a.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5 flex flex-col cursor-pointer" onDoubleClick={() => openEdit(a)}>
               <div className="flex items-start gap-3 min-w-0 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <FileText size={20} className="text-primary" />
@@ -220,9 +220,8 @@ export function Knowledge() {
                 <button className="btn btn-ghost btn-xs" onClick={() => openVersions(a)}>
                   <History size={12} /> Versões
                 </button>
-                <button className="btn btn-ghost btn-xs ml-auto" onClick={() => openEdit(a)}>Editar</button>
                 <button className="btn btn-ghost btn-xs text-error"
-                  onClick={() => { if (confirm(`Remover "${a.title}"?`)) deleteArticle.mutate(a.id); }}>
+                  onClick={(e) => { e.stopPropagation(); if (confirm(`Remover "${a.title}"?`)) deleteArticle.mutate(a.id); }}>
                   <Trash2 size={12} />
                 </button>
               </div>

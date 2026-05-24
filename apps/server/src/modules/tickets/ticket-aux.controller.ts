@@ -19,9 +19,5 @@ export class TicketAuxController {
     return this.prisma.ticketPriority.findMany({ orderBy: { level: 'asc' } });
   }
 
-  @Get('ticket-categories')
-  @ApiOperation({ summary: 'Listar categorias de tickets' })
-  async categories() {
-    return this.prisma.ticketCategory.findMany({ orderBy: { name: 'asc' } });
-  }
+
 }

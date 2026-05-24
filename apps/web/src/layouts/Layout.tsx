@@ -4,6 +4,7 @@ import { Header } from '../components/layout/Header';
 import { Sidebar } from '../components/layout/Sidebar';
 import { ToastContainer } from '../components/ui/ToastContainer';
 import { SocketListener } from '../components/SocketListener';
+import { ChatWidget } from '../components/ChatWidget';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -26,6 +27,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {children}
           </div>
         </main>
+        <ChatWidget />
       </div>
       <Sidebar />
     </div>

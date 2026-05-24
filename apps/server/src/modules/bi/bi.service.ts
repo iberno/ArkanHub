@@ -40,7 +40,7 @@ export class BiService {
 
     const statuses = await this.prisma.ticketStatus.findMany();
     const priorities = await this.prisma.ticketPriority.findMany();
-    const categories = await this.prisma.ticketCategory.findMany();
+    const categories = await this.prisma.category.findMany();
 
     return {
       byStatus: byStatus.map(s => ({ name: statuses.find(st => st.id === s.statusId)?.name ?? 'Desconhecido', count: s._count._all })),

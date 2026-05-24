@@ -24,10 +24,12 @@ export class TicketsController {
   async findAll(
     @Query('assignedTo') assignedTo?: string,
     @Query('unassigned') unassigned?: string,
+    @Query('statusName') statusName?: string,
   ) {
     return this.ticketsService.findAll({
       assignedTo,
       unassigned: unassigned === 'true',
+      statusName,
     });
   }
 

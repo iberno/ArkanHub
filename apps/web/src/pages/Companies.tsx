@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building2, Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Building2, Plus, Trash2, Search } from 'lucide-react';
 import { companiesService } from '../services/companies';
 import type { Company } from '../types/api';
 
@@ -66,15 +66,16 @@ export function Companies() {
       {isLoading ? <div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg" /></div> :
         <div className="overflow-x-auto"><table className="table table-zebra">
           <thead><tr><th>Nome</th><th>Documento</th><th>Departamentos</th><th>Clientes</th><th>Usuários</th><th>Ativa</th><th></th></tr></thead>
-          <tbody>{filtered.map(c => <tr key={c.id}>
+          <tbody>{filtered.map(c => <tr key={c.id} className="hover cursor-pointer" onDoubleClick={() => openEdit(c)}>
             <td className="font-medium">{c.name}</td>
             <td className="text-sm text-base-content/60">{c.document ?? '-'}</td>
             <td>{c._count?.departments ?? 0}</td>
             <td>{c._count?.clients ?? 0}</td>
             <td>{c._count?.users ?? 0}</td>
             <td>{c.active ? <span className="badge badge-success badge-xs">Sim</span> : <span className="badge badge-ghost badge-xs">Não</span>}</td>
-            <td><div className="flex gap-1"><button className="btn btn-ghost btn-xs" onClick={() => openEdit(c)}><Pencil size={14} /></button>
-              <button className="btn btn-ghost btn-xs text-error" onClick={() => { if (confirm(`Remover "${c.name}"?`)) deleteM.mutate(c.id); }}><Trash2 size={14} /></button></div></td>
+            <td>
+              <button className="btn btn-ghost btn-xs text-error" onClick={() => { if (confirm(`Remover "${c.name}"?`)) deleteM.mutate(c.id); }}><Trash2 size={14} /></button>
+            </td>
           </tr>)}</tbody>
         </table></div>}
     </div>

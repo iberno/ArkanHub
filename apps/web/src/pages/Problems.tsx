@@ -235,7 +235,7 @@ export function Problems() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((p) => (
-            <div key={p.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5 flex flex-col">
+            <div key={p.id} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-5 flex flex-col cursor-pointer" onDoubleClick={() => openEdit(p)}>
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-error/10 flex items-center justify-center shrink-0">
                   <AlertTriangle size={20} className="text-error" />
@@ -257,10 +257,9 @@ export function Problems() {
               <div className="flex items-center gap-3 mt-3 pt-3 border-t border-base-200 text-xs text-base-content/50">
                 <span className="flex items-center gap-1"><FileText size={12} /> {p._count?.tickets ?? 0}</span>
                 <span className="flex items-center gap-1"><Bug size={12} /> {p._count?.knownErrors ?? 0}</span>
-                <div className="ml-auto flex gap-1">
-                  <button className="btn btn-ghost btn-xs" onClick={() => openEdit(p)}>Editar</button>
+                <div className="ml-auto">
                   <button className="btn btn-ghost btn-xs text-error"
-                    onClick={() => { if (confirm(`Remover "${p.title}"?`)) deleteMutation.mutate(p.id); }}>
+                    onClick={(e) => { e.stopPropagation(); if (confirm(`Remover "${p.title}"?`)) deleteMutation.mutate(p.id); }}>
                     <Trash2 size={12} />
                   </button>
                 </div>

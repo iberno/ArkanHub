@@ -4,6 +4,7 @@ import { EventsGateway } from '../websocket/websocket.gateway';
 import { WorkflowService } from '../workflow/workflow.service';
 import { ApprovalsService } from '../approvals/approvals.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AiService } from '../ai/ai.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 
@@ -15,12 +16,17 @@ export class TicketsService {
     private readonly workflow: WorkflowService,
     private readonly approvals: ApprovalsService,
     private readonly notifications: NotificationsService,
+    private readonly ai: AiService,
   ) {}
 
-  async findAll(params?: { assignedTo?: string; unassigned?: boolean }) {
+  async findAll(params?: { assignedTo?: string; unassigned?: boolean; statusName?: string }) {
     const where: any = {};
     if (params?.assignedTo) where.assignedTo = params.assignedTo;
     if (params?.unassigned) where.assignedTo = null;
+    if (params?.statusName) {
+      const names = params.statusName.split(',').map(s => s.trim()).filter(Boolean);
+      if (names.length > 0) where.status = { name: { in: names } };
+    }
 
     return this.prisma.ticket.findMany({
       where,
@@ -32,6 +38,7 @@ export class TicketsService {
         client: { select: { id: true, name: true } },
         onBehalfOf: { select: { id: true, name: true } },
         department: { select: { id: true, name: true } },
+        ticketAssets: { include: { asset: { include: { category: true } } } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -56,10 +63,26 @@ export class TicketsService {
       },
     });
 
-    this.events.emitToUser(dto.requesterId, 'ticket:created', ticket);
+    if (dto.assetIds?.length) {
+      await this.prisma.ticketAsset.createMany({
+        data: dto.assetIds.map((assetId) => ({ ticketId: ticket.id, assetId })),
+      });
+    }
+
+    const createdTicket = await this.prisma.ticket.findUnique({
+      where: { id: ticket.id },
+      include: {
+        status: true,
+        priority: true,
+        ticketAssets: { include: { asset: { include: { category: true } } } },
+      },
+    });
+
+    this.events.emitToUser(dto.requesterId, 'ticket:created', createdTicket);
     this.workflow.executeForTicket(ticket.id);
     this.createDepartmentApproval(ticket);
-    return ticket;
+    this.runAiClassification(ticket.id, ticket.title, ticket.description);
+    return createdTicket;
   }
 
   private async createDepartmentApproval(ticket: any) {
@@ -71,6 +94,47 @@ export class TicketsService {
     try {
       await this.approvals.createRequest(ticket.id, flow.id);
     } catch { /* silent */ }
+  }
+
+  private async runAiClassification(ticketId: string, title: string, description: string) {
+    try {
+      const suggestion = await this.ai.analyzeTicket(ticketId, title, description);
+      if (!suggestion) return;
+
+      const classifications: any[] = [];
+
+      if (suggestion.categorySuggestion?.category && suggestion.categorySuggestion.confidence > 0.3) {
+        const cat = await this.prisma.category.findFirst({
+          where: { name: suggestion.categorySuggestion.category },
+        });
+        if (cat) {
+          classifications.push({
+            ticketId,
+            modelType: 'category_suggestion',
+            predictedValue: cat.id,
+            confidence: suggestion.categorySuggestion.confidence,
+          });
+        }
+      }
+
+      if (suggestion.prioritySuggestion?.priority && suggestion.prioritySuggestion.confidence > 0.3) {
+        const prio = await this.prisma.ticketPriority.findFirst({
+          where: { name: suggestion.prioritySuggestion.priority },
+        });
+        if (prio) {
+          classifications.push({
+            ticketId,
+            modelType: 'priority_suggestion',
+            predictedValue: prio.id,
+            confidence: suggestion.prioritySuggestion.confidence,
+          });
+        }
+      }
+
+      if (classifications.length > 0) {
+        await this.prisma.aIClassification.createMany({ data: classifications });
+      }
+    } catch { /* silent - AI classification is non-critical */ }
   }
 
   async findOne(id: string) {
@@ -89,6 +153,7 @@ export class TicketsService {
           include: { user: { select: { id: true, name: true } } },
           orderBy: { createdAt: 'desc' },
         },
+        ticketAssets: { include: { asset: { include: { category: true } } } },
       },
     });
 

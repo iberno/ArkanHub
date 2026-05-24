@@ -9,12 +9,12 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { TicketCategoriesService } from './ticket-categories.service';
+import { CategoriesService } from './ticket-categories.service';
 
-@ApiTags('Categorias de Ticket')
-@Controller('ticket-categories')
-export class TicketCategoriesController {
-  constructor(private readonly service: TicketCategoriesService) {}
+@ApiTags('Categorias')
+@Controller('categories')
+export class CategoriesController {
+  constructor(private readonly service: CategoriesService) {}
 
   @Get()
   @ApiOperation({ summary: 'Listar categorias' })

@@ -4,6 +4,7 @@ import { WebsocketModule } from '../websocket/websocket.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { ApprovalsModule } from '../approvals/approvals.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AiModule } from '../ai/ai.module';
 import { TicketsController } from './tickets.controller';
 import { TicketsService } from './tickets.service';
 import { CommentsController } from './comments.controller';
@@ -21,6 +22,7 @@ import { TicketAuxController } from './ticket-aux.controller';
     WorkflowModule,
     ApprovalsModule,
     NotificationsModule,
+    AiModule,
   ],
   controllers: [TicketsController, CommentsController, AttachmentsController, TicketAuxController],
   providers: [TicketsService, CommentsService, AttachmentsService],

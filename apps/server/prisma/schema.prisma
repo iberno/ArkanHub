@@ -38,6 +38,8 @@ model User {
   changesAssigned   Change[]        @relation("change_assignee")
   changeApprovals   ChangeApproval[]
   managedDepartments Department[] @relation("department_manager")
+  chatbotConversations ChatbotConversation[]
+  assignedAssets       Asset[]              @relation("asset_assignee")
 
   @@map("users")
 }
@@ -95,9 +97,10 @@ model Company {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  users       User[]
-  departments Department[]
-  clients     Client[]
+  users          User[]
+  departments    Department[]
+  clients        Client[]
+  assets         Asset[]
 
   @@map("companies")
 }
@@ -116,6 +119,7 @@ model Department {
   users   User[]
   clients Client[]
   tickets Ticket[]
+  assets  Asset[]
 
   @@unique([name, companyId])
   @@map("departments")
@@ -168,7 +172,7 @@ model Ticket {
   department  Department?       @relation(fields: [departmentId], references: [id])
   status      TicketStatus      @relation(fields: [statusId], references: [id])
   priority    TicketPriority    @relation(fields: [priorityId], references: [id])
-  category    TicketCategory?   @relation(fields: [categoryId], references: [id])
+  category    Category?   @relation(fields: [categoryId], references: [id])
   sla         Sla?              @relation(fields: [slaId], references: [id])
   problem     Problem?          @relation(fields: [problemId], references: [id])
   comments    TicketComment[]
@@ -178,6 +182,8 @@ model Ticket {
   approvals   ApprovalRequest[]
 
   satisfaction TicketSatisfaction?
+  classifications AIClassification[]
+  ticketAssets TicketAsset[]
 
   @@map("tickets")
 }
@@ -216,17 +222,18 @@ model TicketPriority {
   @@map("ticket_priorities")
 }
 
-model TicketCategory {
+model Category {
   id        String   @id @default(uuid()) @db.Uuid
   name      String   @db.VarChar(255)
   parentId  String?  @map("parent_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at")
 
-  parent   TicketCategory?  @relation("CategoryParent", fields: [parentId], references: [id])
-  children TicketCategory[] @relation("CategoryParent")
+  parent   Category?  @relation("CategoryParent", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryParent")
   tickets  Ticket[]
+  assets   Asset[]
 
-  @@map("ticket_categories")
+  @@map("categories")
 }
 
 model TicketComment {
@@ -569,6 +576,70 @@ model ChangeApproval {
   approver User   @relation(fields: [approvedBy], references: [id])
 
   @@map("change_approvals")
+}
+
+model Asset {
+  id           String    @id @default(uuid()) @db.Uuid
+  tag          String    @unique @db.VarChar(50)
+  name         String    @db.VarChar(255)
+  categoryId   String?   @map("category_id") @db.Uuid
+  brand        String?   @db.VarChar(100)
+  model        String?   @db.VarChar(100)
+  serialNumber String?   @map("serial_number") @db.VarChar(100)
+  status       String    @default("active") @db.VarChar(20)
+  purchaseDate DateTime? @map("purchase_date")
+  warrantyEnd  DateTime? @map("warranty_end")
+  assignedTo   String?   @map("assigned_to") @db.Uuid
+  departmentId String?   @map("department_id") @db.Uuid
+  companyId    String?   @map("company_id") @db.Uuid
+  notes        String?   @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  category   Category? @relation(fields: [categoryId], references: [id])
+  assignee   User?          @relation("asset_assignee", fields: [assignedTo], references: [id])
+  department Department?    @relation(fields: [departmentId], references: [id])
+  company    Company?       @relation(fields: [companyId], references: [id])
+  ticketLinks TicketAsset[]
+
+  @@map("assets")
+}
+
+model TicketAsset {
+  ticketId String @map("ticket_id") @db.Uuid
+  assetId  String @map("asset_id") @db.Uuid
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  asset  Asset  @relation(fields: [assetId], references: [id])
+
+  @@id([ticketId, assetId])
+  @@map("ticket_assets")
+}
+
+model AIClassification {
+  id              String   @id @default(uuid()) @db.Uuid
+  ticketId        String   @map("ticket_id") @db.Uuid
+  modelType       String   @map("model_type") @db.VarChar(50)
+  predictedValue  String   @map("predicted_value") @db.VarChar(255)
+  confidence      Float
+  applied         Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+
+  @@map("ai_classifications")
+}
+
+model ChatbotConversation {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  messages  Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("chatbot_conversations")
 }
 
 model Notification {

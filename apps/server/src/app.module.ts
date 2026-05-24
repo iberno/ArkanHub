@@ -26,6 +26,7 @@ import { TicketCategoriesModule } from './modules/ticket-categories/ticket-categ
 import { SatisfactionModule } from './modules/satisfaction/satisfaction.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AssetsModule } from './modules/assets/assets.module';
+import { ProjectsModule } from './modules/projects/projects.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { AssetsModule } from './modules/assets/assets.module';
     SatisfactionModule,
     AiModule,
     AssetsModule,
+    ProjectsModule,
   ],
   providers: [
     {

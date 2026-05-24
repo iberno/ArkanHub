@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Ticket, Users, Building2, Building, UserPlus, Tags,
   Clock, ClipboardList, BookOpen, Workflow, BarChart3,
-  AlertTriangle, GitPullRequest, Monitor, Archive,
+  AlertTriangle, GitPullRequest, Monitor, Archive, FolderKanban,
 } from 'lucide-react';
 import type { FC } from 'react';
 
@@ -35,6 +35,12 @@ export const navCategories: NavCategory[] = [
     title: 'Ativos',
     items: [
       { label: 'Ativos', path: '/assets', icon: Monitor, requiredPermission: 'ticket.create' },
+    ],
+  },
+  {
+    title: 'Projetos',
+    items: [
+      { label: 'Projetos', path: '/projects', icon: FolderKanban, requiredPermission: 'project.manage' },
     ],
   },
   {

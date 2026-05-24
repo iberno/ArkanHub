@@ -26,11 +26,29 @@ export class SatisfactionService {
       throw new ConflictException('Avaliação deve ser entre 1 e 5');
     }
 
-    return this.prisma.ticketSatisfaction.upsert({
+    const satisfaction = await this.prisma.ticketSatisfaction.upsert({
       where: { ticketId },
       update: { rating: data.rating, comment: data.comment },
       create: { ticketId, rating: data.rating, comment: data.comment },
     });
+
+    // Auto-close on approval (rating >= 3)
+    if (data.rating >= 3 && ticket.status.name !== 'Fechado') {
+      const fechadoStatus = await this.prisma.ticketStatus.findUnique({
+        where: { name: 'Fechado' },
+      });
+      if (fechadoStatus) {
+        await this.prisma.ticket.update({
+          where: { id: ticketId },
+          data: {
+            statusId: fechadoStatus.id,
+            closedAt: new Date(),
+          },
+        });
+      }
+    }
+
+    return satisfaction;
   }
 
   async getStats() {

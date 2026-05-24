@@ -82,7 +82,10 @@ export interface Ticket {
   onBehalfOf?: Pick<Client, 'id' | 'name' | 'email'>;
   department?: Pick<Department, 'id' | 'name'>;
   comments?: TicketComment[];
+  histories?: { id: string; field: string; oldValue: string; newValue: string; createdAt: string }[];
   ticketAssets?: { asset: Asset }[];
+  ticketRelations?: { id: string; relatedTicket: Pick<Ticket, 'id' | 'protocol' | 'title'> }[];
+  relatedTickets?: { id: string; ticket: Pick<Ticket, 'id' | 'protocol' | 'title'> }[];
 }
 
 export interface TicketStatus {
@@ -408,4 +411,73 @@ export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
   user: { id: string; email: string; name: string; roles: string[]; permissions: string[] };
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  charter?: string;
+  managerId: string;
+  status: string;
+  priority: string;
+  startDate?: string;
+  targetEndDate?: string;
+  actualEndDate?: string;
+  estimatedBudget?: number;
+  actualBudget?: number;
+  createdAt: string;
+  updatedAt: string;
+  manager?: Pick<User, 'id' | 'name' | 'email'>;
+  phases?: ProjectPhase[];
+  risks?: ProjectRisk[];
+  stakeholders?: ProjectStakeholder[];
+  milestones?: ProjectMilestone[];
+  tickets?: Ticket[];
+  _count?: { tickets: number; risks: number; milestones: number };
+}
+
+export interface ProjectPhase {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  order: number;
+  startDate?: string;
+  endDate?: string;
+  createdAt: string;
+}
+
+export interface ProjectRisk {
+  id: string;
+  projectId: string;
+  description: string;
+  probability: string;
+  impact: string;
+  mitigation?: string;
+  status: string;
+  ownerId?: string;
+  createdAt: string;
+  updatedAt: string;
+  owner?: Pick<User, 'id' | 'name'>;
+}
+
+export interface ProjectStakeholder {
+  id: string;
+  projectId: string;
+  userId: string;
+  role: string;
+  createdAt: string;
+  user?: Pick<User, 'id' | 'name' | 'email'>;
+}
+
+export interface ProjectMilestone {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  date: string;
+  completed: boolean;
+  completedAt?: string;
+  createdAt: string;
 }

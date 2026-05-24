@@ -40,6 +40,9 @@ model User {
   managedDepartments Department[] @relation("department_manager")
   chatbotConversations ChatbotConversation[]
   assignedAssets       Asset[]              @relation("asset_assignee")
+  managedProjects      Project[]            @relation("project_manager")
+  projectRisks         ProjectRisk[]        @relation("project_risk_owner")
+  projectStakeholder   ProjectStakeholder[]
 
   @@map("users")
 }
@@ -184,6 +187,13 @@ model Ticket {
   satisfaction TicketSatisfaction?
   classifications AIClassification[]
   ticketAssets TicketAsset[]
+  ticketRelations   TicketRelation[] @relation("ticket_relations")
+  relatedTickets    TicketRelation[] @relation("related_ticket_relations")
+  projectId         String?   @map("project_id") @db.Uuid
+  projectPhaseId    String?   @map("project_phase_id") @db.Uuid
+
+  project      Project?      @relation(fields: [projectId], references: [id])
+  projectPhase ProjectPhase? @relation(fields: [projectPhaseId], references: [id])
 
   @@map("tickets")
 }
@@ -198,6 +208,20 @@ model TicketSatisfaction {
   ticket Ticket @relation(fields: [ticketId], references: [id])
 
   @@map("ticket_satisfactions")
+}
+
+model TicketRelation {
+  id              String   @id @default(uuid()) @db.Uuid
+  ticketId        String   @map("ticket_id") @db.Uuid
+  relatedTicketId String   @map("related_ticket_id") @db.Uuid
+  type            String   @default("substitute") @db.VarChar(50)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  ticket        Ticket @relation("ticket_relations", fields: [ticketId], references: [id])
+  relatedTicket Ticket @relation("related_ticket_relations", fields: [relatedTicketId], references: [id])
+
+  @@unique([ticketId, relatedTicketId])
+  @@map("ticket_relations")
 }
 
 model TicketStatus {
@@ -282,6 +306,7 @@ model Sla {
   name            String   @unique @db.VarChar(255)
   responseTime    Int      @map("response_time")
   resolutionTime  Int      @map("resolution_time")
+  autoCloseHours  Int?     @default(72) @map("auto_close_hours")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -652,4 +677,93 @@ model Notification {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("notifications")
+}
+
+model Project {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String   @db.VarChar(255)
+  description     String?  @db.Text
+  charter         String?  @db.Text
+  managerId       String   @map("manager_id") @db.Uuid
+  status          String   @default("Draft") @db.VarChar(50)
+  priority        String   @default("Média") @db.VarChar(50)
+  startDate       DateTime? @map("start_date")
+  targetEndDate   DateTime? @map("target_end_date")
+  actualEndDate   DateTime? @map("actual_end_date")
+  estimatedBudget Float?   @map("estimated_budget")
+  actualBudget    Float?   @map("actual_budget")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  manager      User              @relation("project_manager", fields: [managerId], references: [id])
+  tickets      Ticket[]
+  phases       ProjectPhase[]
+  risks        ProjectRisk[]
+  stakeholders ProjectStakeholder[]
+  milestones   ProjectMilestone[]
+
+  @@map("projects")
+}
+
+model ProjectPhase {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  order       Int      @default(0)
+  startDate   DateTime? @map("start_date")
+  endDate     DateTime? @map("end_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+  tickets Ticket[]
+
+  @@map("project_phases")
+}
+
+model ProjectRisk {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  description String   @db.Text
+  probability String   @default("Médio") @db.VarChar(20)
+  impact      String   @default("Médio") @db.VarChar(20)
+  mitigation  String?  @db.Text
+  status      String   @default("Aberto") @db.VarChar(50)
+  ownerId     String?  @map("owner_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+  owner   User?   @relation("project_risk_owner", fields: [ownerId], references: [id])
+
+  @@map("project_risks")
+}
+
+model ProjectStakeholder {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_stakeholders")
+}
+
+model ProjectMilestone {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String    @map("project_id") @db.Uuid
+  name        String    @db.VarChar(255)
+  description String?   @db.Text
+  date        DateTime
+  completed   Boolean   @default(false)
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("project_milestones")
 }

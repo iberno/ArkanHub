@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ticketsService } from '../services/tickets';
 import { useAuthStore } from '../store/auth';
@@ -8,11 +8,19 @@ import type { TicketStatus, TicketPriority } from '../types/api';
 
 export function TicketNew() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const relatedTo = searchParams.get('relatedTo');
   const user = useAuthStore((s) => s.user);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [statusId, setStatusId] = useState('');
   const [priorityId, setPriorityId] = useState('');
+
+  const { data: relatedTicket } = useQuery({
+    queryKey: ['ticket', relatedTo],
+    queryFn: () => ticketsService.findOne(relatedTo!),
+    enabled: !!relatedTo,
+  });
 
   const { data: statuses } = useQuery({
     queryKey: ['ticket-statuses'],
@@ -25,14 +33,19 @@ export function TicketNew() {
   });
 
   const mutation = useMutation({
-    mutationFn: () =>
-      ticketsService.create({
+    mutationFn: () => {
+      const body = {
         title,
         description,
         requesterId: user!.id,
         statusId,
         priorityId,
-      }),
+      };
+      if (relatedTo) {
+        return ticketsService.createRelated(relatedTo, body);
+      }
+      return ticketsService.create(body);
+    },
     onSuccess: (ticket) => {
       navigate(`/tickets/${ticket.id}`);
     },
@@ -49,7 +62,18 @@ export function TicketNew() {
         <Link to="/tickets" className="link link-hover text-sm">&larr; Voltar</Link>
       </div>
 
-      <h1 className="text-3xl font-bold mb-6">Novo Ticket</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        {relatedTo ? 'Novo Ticket Relacionado' : 'Novo Ticket'}
+      </h1>
+
+      {relatedTicket && (
+        <div className="alert alert-info mb-4 text-sm">
+          <span>
+            Este ticket será criado como relacionado ao ticket{' '}
+            <strong>{relatedTicket.protocol}</strong> — {relatedTicket.title}
+          </span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="bg-base-100 rounded-box shadow-sm border border-base-200 p-6 space-y-4">
         <div className="form-control">

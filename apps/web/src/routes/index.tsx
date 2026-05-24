@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/auth';
 import { getDefaultRoute } from '../config/navigation';
 import { Dashboard } from '../pages/Dashboard';
 import { Tickets } from '../pages/Tickets';
+import { TicketNew } from '../pages/TicketNew';
 import { ClosedTickets } from '../pages/ClosedTickets';
 import { Users } from '../pages/Users';
 import { Slas } from '../pages/Slas';
@@ -20,6 +21,8 @@ import { Categories } from '../pages/Categories';
 import { Profile } from '../pages/Profile';
 import { Login } from '../pages/Login';
 import { Assets } from '../pages/Assets';
+import { Projects } from '../pages/Projects';
+import { ProjectDetail } from '../pages/ProjectDetail';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -40,7 +43,7 @@ export function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<ProtectedRoute><HomeRedirect /></ProtectedRoute>} />
       <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
-      <Route path="/tickets/new" element={<Navigate to="/tickets" replace />} />
+      <Route path="/tickets/new" element={<ProtectedRoute><TicketNew /></ProtectedRoute>} />
       <Route path="/tickets/closed" element={<ProtectedRoute><ClosedTickets /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/slas" element={<ProtectedRoute><Slas /></ProtectedRoute>} />
@@ -57,6 +60,8 @@ export function AppRoutes() {
       <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
+      <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+      <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
     </Routes>
   );
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma/prisma.service';
 import { EventsGateway } from '../websocket/websocket.gateway';
 import { WorkflowService } from '../workflow/workflow.service';
@@ -85,6 +85,35 @@ export class TicketsService {
     return createdTicket;
   }
 
+  async createBatch(dtos: CreateTicketDto[]) {
+    const tickets = await this.prisma.$transaction(
+      dtos.map((dto) => this.prisma.ticket.create({
+        data: {
+          protocol: `TK-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`,
+          title: dto.title,
+          description: dto.description,
+          requesterId: dto.requesterId,
+          assignedTo: dto.assignedTo,
+          clientId: dto.clientId,
+          onBehalfOfId: dto.onBehalfOfId,
+          departmentId: dto.departmentId,
+          statusId: dto.statusId,
+          priorityId: dto.priorityId,
+          categoryId: dto.categoryId,
+        },
+      })),
+    );
+
+    return this.prisma.ticket.findMany({
+      where: { id: { in: tickets.map((t) => t.id) } },
+      include: {
+        status: true,
+        priority: true,
+        ticketAssets: { include: { asset: { include: { category: true } } } },
+      },
+    });
+  }
+
   private async createDepartmentApproval(ticket: any) {
     if (!ticket.departmentId) return;
     const dept = await this.prisma.department.findUnique({ where: { id: ticket.departmentId } });
@@ -154,6 +183,9 @@ export class TicketsService {
           orderBy: { createdAt: 'desc' },
         },
         ticketAssets: { include: { asset: { include: { category: true } } } },
+        histories: { orderBy: { createdAt: 'desc' } },
+        ticketRelations: { include: { relatedTicket: { select: { id: true, protocol: true, title: true } } } },
+        relatedTickets: { include: { ticket: { select: { id: true, protocol: true, title: true } } } },
       },
     });
 
@@ -249,5 +281,100 @@ export class TicketsService {
     this.events.emitToTicket(id, 'ticket:updated', updated);
     this.workflow.executeForTicket(id);
     return updated;
+  }
+
+  async reopen(id: string, userId: string) {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      include: { status: true },
+    });
+
+    if (!ticket) throw new NotFoundException('Ticket não encontrado');
+    if (ticket.status.name !== 'Resolvido') {
+      throw new ConflictException('Só é possível reabrir tickets com status "Resolvido"');
+    }
+
+    const emAndamento = await this.prisma.ticketStatus.findUnique({
+      where: { name: 'Em Andamento' },
+    });
+
+    if (!emAndamento) throw new NotFoundException('Status "Em Andamento" não encontrado');
+
+    const updated = await this.prisma.ticket.update({
+      where: { id },
+      data: {
+        statusId: emAndamento.id,
+        resolvedAt: null,
+        closedAt: null,
+      },
+      include: {
+        status: true,
+        priority: true,
+        assignee: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    await this.prisma.ticketHistory.create({
+      data: {
+        ticketId: id,
+        userId,
+        field: 'status',
+        oldValue: 'Resolvido',
+        newValue: 'Em Andamento',
+      },
+    });
+
+    this.events.emitToTicket(id, 'ticket:updated', updated);
+    return this.prisma.ticket.findUnique({
+      where: { id },
+      include: {
+        status: true,
+        priority: true,
+        requester: { select: { id: true, name: true, email: true } },
+        assignee: { select: { id: true, name: true, email: true } },
+        client: { select: { id: true, name: true, email: true } },
+        onBehalfOf: { select: { id: true, name: true, email: true } },
+        department: { select: { id: true, name: true } },
+        comments: {
+          include: { user: { select: { id: true, name: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
+        histories: { orderBy: { createdAt: 'desc' } },
+        ticketAssets: { include: { asset: { include: { category: true } } } },
+        ticketRelations: { include: { relatedTicket: { select: { id: true, protocol: true, title: true } } } },
+        relatedTickets: { include: { ticket: { select: { id: true, protocol: true, title: true } } } },
+      },
+    });
+  }
+
+  async createRelated(relatedTicketId: string, dto: CreateTicketDto) {
+    const relatedTicket = await this.prisma.ticket.findUnique({
+      where: { id: relatedTicketId },
+    });
+    if (!relatedTicket) throw new NotFoundException('Ticket relacionado não encontrado');
+
+    const newTicket = await this.create(dto);
+    if (!newTicket) throw new Error('Erro ao criar ticket');
+
+    await this.prisma.ticketRelation.create({
+      data: {
+        ticketId: newTicket.id,
+        relatedTicketId,
+        type: 'substitute',
+      },
+    });
+
+    return this.prisma.ticket.findUnique({
+      where: { id: newTicket.id },
+      include: {
+        status: true,
+        priority: true,
+        requester: { select: { id: true, name: true, email: true } },
+        assignee: { select: { id: true, name: true, email: true } },
+        relatedTickets: {
+          include: { relatedTicket: true },
+        },
+      },
+    });
   }
 }

@@ -21,6 +21,15 @@ export const ticketsService = {
     return data;
   },
 
+  async createBatch(body: {
+    title: string; description: string; requesterId: string; statusId: string; priorityId: string;
+    categoryId?: string; clientId?: string; onBehalfOfId?: string; departmentId?: string;
+    assignedTo?: string; assetIds?: string[];
+  }[]) {
+    const { data } = await api.post<Ticket[]>('/tickets/batch', body);
+    return data;
+  },
+
   async update(id: string, body: Record<string, any>) {
     const { data } = await api.patch<Ticket>(`/tickets/${id}`, body);
     return data;
@@ -45,6 +54,20 @@ export const ticketsService = {
     const form = new FormData();
     form.append('file', file);
     const { data } = await api.post(`/tickets/${ticketId}/attachments`, form);
+    return data;
+  },
+
+  async reopen(id: string) {
+    const { data } = await api.post<Ticket>(`/tickets/${id}/reopen`);
+    return data;
+  },
+
+  async createRelated(id: string, body: {
+    title: string; description: string; requesterId: string; statusId: string; priorityId: string;
+    categoryId?: string; clientId?: string; onBehalfOfId?: string; departmentId?: string;
+    assignedTo?: string; assetIds?: string[];
+  }) {
+    const { data } = await api.post<Ticket>(`/tickets/${id}/related`, body);
     return data;
   },
 };

@@ -39,6 +39,12 @@ export class TicketsController {
     return this.ticketsService.create(dto);
   }
 
+  @Post('batch')
+  @ApiOperation({ summary: 'Criar múltiplos tickets' })
+  async createBatch(@Body() dtos: CreateTicketDto[]) {
+    return this.ticketsService.createBatch(dtos);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obter ticket por ID' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
@@ -53,5 +59,23 @@ export class TicketsController {
     @CurrentUser() user: { id: string },
   ) {
     return this.ticketsService.update(id, dto, user.id);
+  }
+
+  @Post(':id/reopen')
+  @ApiOperation({ summary: 'Reabrir ticket (só de Resolvido)' })
+  async reopen(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.ticketsService.reopen(id, user.id);
+  }
+
+  @Post(':id/related')
+  @ApiOperation({ summary: 'Criar ticket relacionado a um ticket fechado' })
+  async createRelated(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateTicketDto,
+  ) {
+    return this.ticketsService.createRelated(id, dto);
   }
 }

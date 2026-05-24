@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, CheckCircle, XCircle, Clock, Paperclip, Download, UserCog, Star } from 'lucide-react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Paperclip, Download, UserCog, Star, FolderKanban } from 'lucide-react';
 import { ticketsService } from '../../services/tickets';
 import { approvalsService } from '../../services/approvals';
+import { projectsService } from '../../services/projects';
 import { usersService } from '../../services/users';
 import { departmentsService } from '../../services/departments';
 import { satisfactionService } from '../../services/satisfaction';
@@ -18,6 +20,7 @@ interface Props {
 
 export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
   const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [isInternal, setIsInternal] = useState(false);
@@ -76,6 +79,28 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
   const satisfactionMutation = useMutation({
     mutationFn: () => satisfactionService.upsert(ticketId!, { rating: satisfactionRating, comment: satisfactionComment || undefined }),
     onSuccess: () => refetchSatisfaction(),
+  });
+
+  const reopenMutation = useMutation({
+    mutationFn: () => ticketsService.reopen(ticketId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] });
+    },
+  });
+
+  const [convertName, setConvertName] = useState('');
+  const [showConvert, setShowConvert] = useState(false);
+  const convertMutation = useMutation({
+    mutationFn: () => projectsService.convertFromTicket(ticketId!, {
+      name: convertName,
+      managerId: user!.id,
+      description: ticket?.description ? `${ticket.title}\n\n${ticket.description}` : ticket?.title,
+    }),
+    onSuccess: (project) => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] });
+      navigate(`/projects/${project.id}`);
+      (modalRef.current as HTMLDialogElement)?.close();
+    },
   });
 
   useEffect(() => {
@@ -413,6 +438,50 @@ export function TicketDetailModal({ modalRef, ticketId, onClose }: Props) {
                   >
                     Pegar ticket
                   </button>
+                )}
+
+                {ticket?.status?.name === 'Resolvido' && (
+                  <button
+                    className="btn btn-warning btn-sm w-full gap-1"
+                    onClick={() => reopenMutation.mutate()}
+                    disabled={reopenMutation.isPending}
+                  >
+                    {reopenMutation.isPending ? <span className="loading loading-spinner loading-xs" /> : 'Reabrir ticket'}
+                  </button>
+                )}
+
+                {ticket?.status?.name === 'Fechado' && (
+                  <button
+                    className="btn btn-outline btn-sm w-full gap-1"
+                    onClick={() => {
+                      (modalRef.current as HTMLDialogElement)?.close();
+                      navigate(`/tickets/new?relatedTo=${ticketId}`);
+                    }}
+                  >
+                    Criar novo ticket relacionado
+                  </button>
+                )}
+
+                {!ticket?.projectId && (
+                  <>
+                    {showConvert ? (
+                      <div className="space-y-2">
+                        <input className="input input-bordered input-xs w-full" placeholder="Nome do projeto"
+                          value={convertName} onChange={(e) => setConvertName(e.target.value)} />
+                        <div className="flex gap-1">
+                          <button className="btn btn-primary btn-xs flex-1" onClick={() => convertMutation.mutate()}
+                            disabled={!convertName || convertMutation.isPending}>
+                            {convertMutation.isPending ? <span className="loading loading-spinner loading-xs" /> : 'Converter'}
+                          </button>
+                          <button className="btn btn-ghost btn-xs" onClick={() => setShowConvert(false)}>Cancelar</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button className="btn btn-outline btn-sm w-full gap-1" onClick={() => setShowConvert(true)}>
+                        <FolderKanban size={14} /> Converter em Projeto
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

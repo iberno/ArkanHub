@@ -123,6 +123,11 @@ async function main() {
     { key: 'access.manage', desc: 'Gerenciar acessos' },
     { key: 'infra.manage', desc: 'Gerenciar infraestrutura' },
     { key: 'project.manage', desc: 'Gerenciar projetos' },
+    { key: 'project.create', desc: 'Criar projetos' },
+    { key: 'project.edit', desc: 'Editar projetos' },
+    { key: 'project.delete', desc: 'Excluir projetos' },
+    { key: 'project.manage-tasks', desc: 'Gerenciar tarefas do projeto' },
+    { key: 'project.manage-team', desc: 'Gerenciar equipe do projeto' },
     { key: 'ticket.edit', desc: 'Editar qualquer ticket' },
   ];
   const permIds: Record<string, string> = {};

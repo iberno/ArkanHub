@@ -187,7 +187,18 @@ Clique em um projeto para acessar o detalhe com 4 abas:
 - **Dados Financeiros** — orçamento estimado e real
 
 #### Tickets
-Lista todos os tickets vinculados ao projeto em formato de tabela. Use o botão **"Novo ticket no projeto"** para criar tickets já associados ao projeto.
+Quadro **Kanban** como visualização padrão, com toggle para visualização em tabela (ícone `LayoutGrid` / `Columns3` no canto superior direito).
+
+**Kanban:**
+- 5 colunas por status: **Aberto → Em Andamento → Aguardando → Resolvido → Fechado**
+- **Arraste e solte** tickets entre colunas para alterar o status
+- Cada card mostra protocolo, título, prioridade e responsável
+- Ao soltar o ticket em outra coluna, o status é atualizado automaticamente
+
+**Tabela:**
+- Alternativa que exibe os tickets em formato tabular
+
+Use o botão **"Novo ticket no projeto"** para criar tickets já associados ao projeto.
 
 #### Riscos
 Gerencie os riscos do projeto com:

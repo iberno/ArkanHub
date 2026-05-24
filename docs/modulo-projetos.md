@@ -192,15 +192,30 @@ Isso permite:
 | Componente | Arquivo |
 |------------|---------|
 | `ProjectCreateModal` | `components/projects/ProjectCreateModal.tsx` |
+| `KanbanBoard` | `components/projects/KanbanBoard.tsx` |
 
 ### Abas do Detalhe
 
 | Aba | Conteúdo |
 |-----|----------|
 | **Visão Geral** | Charter, status (botões de transição), marcos (checklist), fases, dados financeiros |
-| **Tickets** | Tabela de tickets vinculados + "Novo ticket no projeto" |
+| **Tickets** | Kanban (padrão) + toggle para tabela, "Novo ticket no projeto" |
 | **Riscos** | Lista com probabilidade/impacto/mitigação, CRUD completo |
 | **Equipe** | Membros com papel (Sponsor, Gerente, Membro...), CRUD completo |
+
+### Kanban Board
+
+A aba Tickets agora exibe um **quadro Kanban** como visualização padrão, com toggle para visualização em tabela.
+
+**Colunas:** Aberto → Em Andamento → Aguardando → Resolvido → Fechado
+
+**Funcionalidades:**
+- **Arrastar e soltar (drag-and-drop):** mova tickets entre colunas para alterar o status
+- **Cards:** cada ticket exibe protocolo, título, prioridade (com cor) e responsável
+- **Contagem:** cada coluna mostra o total de tickets naquele status
+- **Atualização em tempo real:** após o drop, o status é atualizado via `PATCH /tickets/:id` e o board recarregado
+
+**Tecnologia:** drag-and-drop nativo HTML5 (sem dependências externas)
 
 ### Serviço
 

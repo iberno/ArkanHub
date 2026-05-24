@@ -3,12 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FolderKanban, Plus, Trash2, CheckCircle, XCircle, AlertTriangle,
-  User, Calendar, DollarSign, Users, Flag,
+  User, Calendar, DollarSign, Users, Flag, LayoutGrid, Columns3,
 } from 'lucide-react';
 import { projectsService } from '../services/projects';
 import { ticketsService } from '../services/tickets';
 import { usersService } from '../services/users';
 import { useAuthStore } from '../store/auth';
+import { KanbanBoard } from '../components/projects/KanbanBoard';
 import type { Project, ProjectRisk, ProjectMilestone } from '../types/api';
 
 type Tab = 'overview' | 'tickets' | 'risks' | 'team';
@@ -206,42 +207,54 @@ function OverviewTab({ project, onUpdate }: { project: Project; onUpdate: (data:
 }
 
 function TicketsTab({ project }: { project: Project }) {
+  const [view, setView] = useState<'table' | 'kanban'>('kanban');
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-base-content/50">{project.tickets?.length ?? 0} tickets vinculados</p>
-        <Link to={`/tickets/new?projectId=${project.id}`} className="btn btn-primary btn-xs gap-1">
-          <Plus size={12} /> Novo ticket no projeto
-        </Link>
+        <div className="flex items-center gap-2">
+          <div className="join join-sm">
+            <button className={`join-item btn btn-xs ${view === 'table' ? 'btn-active' : ''}`}
+              onClick={() => setView('table')}><LayoutGrid size={14} /></button>
+            <button className={`join-item btn btn-xs ${view === 'kanban' ? 'btn-active' : ''}`}
+              onClick={() => setView('kanban')}><Columns3 size={14} /></button>
+          </div>
+          <Link to={`/tickets/new?projectId=${project.id}`} className="btn btn-primary btn-xs gap-1">
+            <Plus size={12} /> Novo ticket no projeto
+          </Link>
+        </div>
       </div>
       {!project.tickets?.length
         ? <div className="text-center py-12 text-base-content/40">Nenhum ticket vinculado a este projeto</div>
-        : <div className="overflow-x-auto">
-            <table className="table table-sm">
-              <thead>
-                <tr>
-                  <th>Protocolo</th>
-                  <th>Título</th>
-                  <th>Status</th>
-                  <th>Prioridade</th>
-                  <th>Responsável</th>
-                  <th>Fase</th>
-                </tr>
-              </thead>
-              <tbody>
-                {project.tickets.map((t) => (
-                  <tr key={t.id} className="hover">
-                    <td className="font-mono text-xs">{t.protocol}</td>
-                    <td className="text-sm max-w-xs truncate">{t.title}</td>
-                    <td><span className="badge badge-xs" style={{ backgroundColor: t.status?.color ?? '#888', color: '#fff' }}>{t.status?.name}</span></td>
-                    <td className="text-xs">{t.priority?.name}</td>
-                    <td className="text-xs">{t.assignee?.name || '-'}</td>
-                    <td className="text-xs">{/* TODO: phase name from projectPhaseId */ '-'}</td>
+        : view === 'kanban'
+          ? <KanbanBoard projectId={project.id} tickets={project.tickets} />
+          : <div className="overflow-x-auto">
+              <table className="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Protocolo</th>
+                    <th>Título</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th>Responsável</th>
+                    <th>Fase</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {project.tickets.map((t) => (
+                    <tr key={t.id} className="hover">
+                      <td className="font-mono text-xs">{t.protocol}</td>
+                      <td className="text-sm max-w-xs truncate">{t.title}</td>
+                      <td><span className="badge badge-xs" style={{ backgroundColor: t.status?.color ?? '#888', color: '#fff' }}>{t.status?.name}</span></td>
+                      <td className="text-xs">{t.priority?.name}</td>
+                      <td className="text-xs">{t.assignee?.name || '-'}</td>
+                      <td className="text-xs">{/* TODO: phase name from projectPhaseId */ '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
       }
     </div>
   );

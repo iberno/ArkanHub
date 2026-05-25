@@ -9,9 +9,9 @@ import { ChatWidget } from '../components/ChatWidget';
 export function Layout({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
   const location = useLocation();
-  const isLogin = location.pathname === '/login';
+  const isPublicPage = location.pathname === '/login' || location.pathname === '/landing';
 
-  if (isLogin || !token) {
+  if (isPublicPage || !token) {
     return <>{children}</>;
   }
 

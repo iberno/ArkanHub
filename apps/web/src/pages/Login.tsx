@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { useAuthStore } from '../store/auth';
 import { getDefaultRoute } from '../config/navigation';
@@ -33,9 +33,9 @@ export function Login() {
       <div className="card bg-base-100 shadow-xl w-full max-w-sm">
         <div className="card-body">
           <div className="text-center mb-6">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-primary-content font-bold text-xl mx-auto mb-3">
+            <Link to="/landing" className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-primary-content font-bold text-xl mx-auto mb-3">
               A
-            </div>
+            </Link>
             <h2 className="text-2xl font-bold">ArkanHub</h2>
             <p className="text-base-content/60 text-sm mt-1">
               Plataforma de gerenciamento de tickets
@@ -83,6 +83,9 @@ export function Login() {
               {loading ? <span className="loading loading-spinner" /> : 'Entrar'}
             </button>
           </form>
+          <div className="text-center mt-4">
+            <Link to="/landing" className="link link-hover text-xs text-base-content/40">&larr; Voltar para a página inicial</Link>
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { getDefaultRoute } from '../config/navigation';
+import { Landing } from '../pages/Landing';
 import { Dashboard } from '../pages/Dashboard';
 import { Tickets } from '../pages/Tickets';
 import { TicketNew } from '../pages/TicketNew';
@@ -40,6 +41,7 @@ function HomeRedirect() {
 export function AppRoutes() {
   return (
     <Routes>
+      <Route path="/landing" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<ProtectedRoute><HomeRedirect /></ProtectedRoute>} />
       <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
